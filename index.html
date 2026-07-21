@@ -20,8 +20,8 @@ body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--text);fon
 .hdr-inner{max-width:640px;margin:0 auto;padding:0 14px;display:flex;align-items:stretch;gap:0;min-height:64px;}
 .hdr-logo-wrap{display:flex;align-items:center;padding:8px 12px 8px 0;border-right:1px solid rgba(180,7,61,.4);margin-right:12px;}
 .hdr-logo{width:46px;height:46px;object-fit:contain;display:block;}
-.hdr-mid{flex:1;display:flex;flex-direction:column;justify-content:center;text-align:center;}
-.hdr-brand{font-family:"EB Garamond",serif;font-size:19px;color:var(--gold);letter-spacing:.04em;line-height:1.2;}
+.hdr-mid{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:3px;}
+.hdr-brand{font-family:"EB Garamond",serif;font-size:23px;color:#e8c96a;letter-spacing:.05em;line-height:1.1;}
 .hdr-sub{font-size:10px;color:#8a7a60;letter-spacing:.1em;text-transform:uppercase;margin-top:2px;}
 .hdr-right{display:flex;align-items:center;gap:8px;padding:8px 0 8px 12px;border-left:1px solid rgba(180,7,61,.4);margin-left:12px;}
 .rate-row.needs-rate input{animation:pulseGlowField 1.8s ease-in-out infinite;border-color:var(--gold);}
@@ -138,8 +138,14 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .tline{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:14px;color:var(--muted);}
 .tline.grand{font-size:21px;font-weight:600;color:var(--dark);font-family:"EB Garamond",serif;border-top:2px solid var(--dark);padding-top:10px;margin-top:8px;}
 .grand-amt{color:var(--brand);}
-.disc-row{display:flex;align-items:center;gap:8px;}
-.disc-row input{width:100px;height:34px;font-size:13px;flex-shrink:0;}
+.tline.total-before-disc{border-top:1px solid var(--border);margin-top:4px;padding-top:8px;font-weight:600;color:var(--dark) !important;font-size:16px;}
+.disc-block{background:#fdf0f3;border:1px solid #f0b8c8;border-radius:var(--rs);padding:10px 12px;margin:10px 0;}
+.disc-block-label{font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--brand);margin-bottom:8px;}
+.disc-block-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.disc-input-wrap{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid #f0b8c8;border-radius:var(--rs);padding:0 10px;height:38px;flex:1;max-width:180px;}
+.disc-prefix{font-size:14px;color:var(--brand);font-weight:500;white-space:nowrap;flex-shrink:0;}
+.disc-input-wrap input{border:none;background:transparent;height:100%;font-size:14px;color:var(--brand);font-weight:500;width:100%;outline:none;padding:0;-webkit-appearance:none;appearance:none;}
+.disc-amount{font-size:16px;font-weight:500;color:var(--brand);}
 
 /* ── Generate ── */
 .gen-btn{width:100%;height:52px;background:var(--brand);color:#fff;border:none;border-radius:var(--r);font-size:17px;font-family:"DM Sans",sans-serif;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:background .15s;}
@@ -366,11 +372,16 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="tblock">
     <div class="tline"><span>Subtotal</span><span id="t-sub">&#8377;0</span></div>
     <div class="tline"><span>GST (3%)</span><span id="t-gst">&#8377;0</span></div>
-    <div class="tline">
-      <span class="disc-row">Discount (&#8377;)
-        <input type="number" id="discount" value="0" min="0" oninput="calc()">
-      </span>
-      <span id="t-disc">&#8722;&#8377;0</span>
+    <div class="tline total-before-disc"><span>Total</span><span id="t-total">&#8377;0</span></div>
+    <div class="disc-block">
+      <div class="disc-block-label">Discount</div>
+      <div class="disc-block-row">
+        <div class="disc-input-wrap">
+          <span class="disc-prefix">&#8722; &#8377;</span>
+          <input type="number" id="discount" value="0" min="0" placeholder="0" oninput="calc()">
+        </div>
+        <span id="t-disc" class="disc-amount">&#8722;&#8377;0</span>
+      </div>
     </div>
     <div class="tline grand"><span>Final</span><span class="grand-amt" id="t-final">&#8377;0</span></div>
   </div>
@@ -849,6 +860,7 @@ function calc(){
   document.getElementById("s-stones").textContent=inr(sTot);
   document.getElementById("t-sub").textContent=inr(sub);
   document.getElementById("t-gst").textContent=inr(gst);
+  document.getElementById("t-total").textContent=inr(tot);
   document.getElementById("t-disc").textContent=disc>0?"\u2212\u20B9"+Math.round(disc).toLocaleString("en-IN"):"\u2212\u20B90";
   document.getElementById("t-final").textContent=inr(fin);
 
@@ -896,18 +908,18 @@ function generateShare(){
 function drawImg(d,name,sku,notes,now,kt,rv,dRows,sRows,logo,btn){
   var W=1000,P=64,C=W-P*2;
   var BRAND="#b4073d",DARK="#1a1208",CREAM="#fdfaf4",GOLD="#c8a84b";
-  var RH=46,SG=32,FS=23;
+  var RH=50,SG=40,FS=23;
 
   var tc=document.createElement("canvas").getContext("2d");
   tc.font="400 "+FS+"px DM Sans,sans-serif";
   var nLines=notes?wrapText(tc,notes,C-60):[];
 
-  var H=120+52+72+(sku?36:0)+36+28+SG;
-  H+=28+14+RH*2+((d.ow||0)>0?32:0)+SG;
-  if(dRows.length) H+=1+SG+28+14+32+12+RH*dRows.length+SG;
-  if(sRows.length) H+=1+SG+28+14+32+12+RH*sRows.length+SG;
-  if(nLines.length) H+=1+SG+28+14+nLines.length*32+32+SG;
-  H+=1+SG+38*2+((d.disc||0)>0?38:0)+SG+3+28+70+60;
+  var H=120+72+80+(sku?40:0)+44+32+SG;  // header + item name area
+  H+=28+14+RH*2+SG;                         // metal section (no other-wt row)
+  if(dRows.length) H+=1+SG+28+14+36+14+RH*dRows.length+SG;
+  if(sRows.length) H+=1+SG+28+14+36+14+RH*sRows.length+SG;
+  if(nLines.length) H+=1+SG+28+14+nLines.length*34+36+SG;
+  H+=1+SG+38*3+((d.disc||0)>0?38:0)+SG+4+36+80+80;  // totals + final + footer
 
   var cv=document.getElementById("preview-canvas");
   cv.width=W; cv.height=H;
@@ -920,28 +932,28 @@ function drawImg(d,name,sku,notes,now,kt,rv,dRows,sRows,logo,btn){
   if(logo) cx.drawImage(logo,18,14,86,86);
 
   cx.textAlign="center";
-  cx.fillStyle=GOLD;     cx.font="500 24px DM Sans,sans-serif"; cx.fillText("KHANDELWAL JEWELLERS",W/2,48);
-  cx.fillStyle="#8a7a60"; cx.font="400 14px DM Sans,sans-serif"; cx.fillText("ESTIMATE TOOL",W/2,72);
+  cx.fillStyle="#e8c96a"; cx.font="600 28px EB Garamond,Georgia,serif"; cx.fillText("KHANDELWAL JEWELLERS",W/2,52);
+  cx.fillStyle="#8a7a60"; cx.font="400 13px DM Sans,sans-serif"; cx.fillText("ESTIMATE TOOL",W/2,76);
   cx.textAlign="right";
   cx.fillStyle="#8a7a60"; cx.font="400 14px DM Sans,sans-serif"; cx.fillText("24kt rate",W-P,40);
   cx.fillStyle=GOLD;     cx.font="600 26px EB Garamond,Georgia,serif";
   cx.fillText("\u20B9"+Math.round(rv).toLocaleString("en-IN")+"/gm",W-P,70);
   cx.textAlign="left";
 
-  var y=120+52;
-  cx.fillStyle=DARK; cx.font="700 68px EB Garamond,Georgia,serif"; cx.fillText(name,P,y); y+=8;
-  if(sku){ cx.fillStyle="#aaa"; cx.font="400 20px DM Sans,sans-serif"; cx.fillText("SKU: "+sku,P,y+26); y+=36; }
+  var y=120+72;
+  cx.fillStyle=DARK; cx.font="700 68px EB Garamond,Georgia,serif"; cx.fillText(name,P,y); y+=16;
+  if(sku){ cx.fillStyle="#aaa"; cx.font="400 20px DM Sans,sans-serif"; cx.fillText("SKU: "+sku,P,y+26); y+=40; }
   cx.fillStyle="#aaa"; cx.font="400 21px DM Sans,sans-serif";
-  cx.fillText("Estimate \u00B7 "+now,P,y+28);
+  cx.fillText("Estimate \u00B7 "+now,P,y+30);
   cx.textAlign="right";
-  cx.fillText(kt+"kt \u00B7 \u20B9"+Math.round(d.gr||0).toLocaleString("en-IN")+"/gm",W-P,y+28);
-  cx.textAlign="left"; y+=28+18;
+  cx.fillText(kt+"kt \u00B7 \u20B9"+Math.round(d.gr||0).toLocaleString("en-IN")+"/gm",W-P,y+30);
+  cx.textAlign="left"; y+=30+22;
   cx.fillStyle=BRAND; cx.fillRect(P,y,C,3); y+=3+SG;
 
-  function sLabel(t){ cx.fillStyle=BRAND; cx.font="600 18px DM Sans,sans-serif"; cx.fillText(t,P,y); y+=28+14; }
+  function sLabel(t){ cx.fillStyle=BRAND; cx.font="600 18px DM Sans,sans-serif"; cx.fillText(t,P,y); y+=28+18; }
   function divider(){ cx.fillStyle="#ddd"; cx.fillRect(P,y,C,1); y+=1+SG; }
   var X2=P+C*.42,X3=P+C*.64,X4=P+C;
-  function hRow(a,b,c,e){ cx.fillStyle="#bbb"; cx.font="500 17px DM Sans,sans-serif"; cx.textAlign="left"; cx.fillText(a,P,y); cx.textAlign="right"; cx.fillText(b,X2,y); cx.fillText(c,X3,y); cx.fillText(e,X4,y); cx.textAlign="left"; y+=32+12; }
+  function hRow(a,b,c,e){ cx.fillStyle="#bbb"; cx.font="500 17px DM Sans,sans-serif"; cx.textAlign="left"; cx.fillText(a,P,y); cx.textAlign="right"; cx.fillText(b,X2,y); cx.fillText(c,X3,y); cx.fillText(e,X4,y); cx.textAlign="left"; y+=36+14; }
   function dRow(a,b,c,e){ cx.fillStyle=DARK; cx.font="400 "+FS+"px DM Sans,sans-serif"; cx.textAlign="left"; cx.fillText(a,P,y); cx.textAlign="right"; cx.fillText(b,X2,y); cx.fillText(c,X3,y); cx.fillText(e,X4,y); cx.textAlign="left"; y+=RH; }
   function tRow(l,v,m){ cx.fillStyle=m?"#999":DARK; cx.font="400 "+FS+"px DM Sans,sans-serif"; cx.textAlign="left"; cx.fillText(l,P,y); cx.textAlign="right"; cx.fillText(v,W-P,y); cx.textAlign="left"; y+=38; }
 
@@ -953,8 +965,7 @@ function drawImg(d,name,sku,notes,now,kt,rv,dRows,sRows,logo,btn){
   } else {
     dRow("Making", (d.mb||0).toFixed(3)+" gm", "\u20B9"+Math.round(d.mr||0).toLocaleString("en-IN")+"/gm", "\u20B9"+Math.round(d.ma||0).toLocaleString("en-IN"));
   }
-  if((d.ow||0)>0){ cx.fillStyle="#c0b8a8"; cx.font="400 19px DM Sans,sans-serif"; cx.fillText("Other wt (stone equiv.)   "+d.ow.toFixed(3)+" gm",P,y); y+=32; }
-  y+=SG;
+  y+=SG;  // Other wt not shown on client image
 
   if(dRows.length){ divider(); sLabel("DIAMONDS"); hRow("Description","Weight","Rate","Amount"); dRows.forEach(function(r){dRow(r.label,r.qty,r.rate,r.amt);}); y+=SG; }
   if(sRows.length){ divider(); sLabel("COLOUR STONES & COMPONENTS"); hRow("Component","Qty","Rate","Amount"); sRows.forEach(function(r){dRow(r.label,r.qty,r.rate,r.amt);}); y+=SG; }
@@ -971,18 +982,24 @@ function drawImg(d,name,sku,notes,now,kt,rv,dRows,sRows,logo,btn){
 
   divider();
   tRow("Subtotal","\u20B9"+Math.round(d.sub||0).toLocaleString("en-IN"),true);
-  tRow("GST (3%)","₹"+Math.round(d.gst||0).toLocaleString("en-IN"),true);
-  if((d.disc||0)>0) tRow("Discount","\u2212\u20B9"+Math.round(d.disc||0).toLocaleString("en-IN"),true);
+  tRow("GST (3%)","\u20B9"+Math.round(d.gst||0).toLocaleString("en-IN"),true);
+  tRow("Total","\u20B9"+Math.round(d.tot||0).toLocaleString("en-IN"),false);
+  if((d.disc||0)>0){
+    cx.fillStyle="#b4073d"; cx.font="400 "+FS+"px DM Sans,sans-serif";
+    cx.textAlign="left"; cx.fillText("Discount",P,y);
+    cx.textAlign="right"; cx.fillText("\u2212\u20B9"+Math.round(d.disc||0).toLocaleString("en-IN"),W-P,y);
+    cx.textAlign="left"; y+=38;
+  }
   y+=SG;
 
-  cx.fillStyle=DARK; cx.fillRect(P,y,C,3); y+=3+28;
-  cx.fillStyle=DARK;  cx.font="700 56px EB Garamond,Georgia,serif"; cx.textAlign="left"; cx.fillText("Final",P,y+46);
-  cx.fillStyle=BRAND; cx.font="700 56px EB Garamond,Georgia,serif"; cx.textAlign="right";
-  cx.fillText("\u20B9"+Math.round(d.fin||0).toLocaleString("en-IN"),W-P,y+46);
-  cx.textAlign="left"; y+=70;
+  cx.fillStyle=DARK; cx.fillStyle=DARK; cx.fillRect(P,y,C,4); y+=4+36;
+  cx.fillStyle=DARK;  cx.font="700 60px EB Garamond,Georgia,serif"; cx.textAlign="left"; cx.fillText("Final",P,y+50);
+  cx.fillStyle=BRAND; cx.font="700 60px EB Garamond,Georgia,serif"; cx.textAlign="right";
+  cx.fillText("\u20B9"+Math.round(d.fin||0).toLocaleString("en-IN"),W-P,y+50);
+  cx.textAlign="left"; y+=80;
 
   cx.fillStyle="#bbb"; cx.font="400 17px DM Sans,sans-serif"; cx.textAlign="center";
-  cx.fillText("This is an estimate \u00B7 Not a tax invoice \u00B7 Khandelwal Jewellers",W/2,y+26);
+  cx.fillText("This is an estimate \u00B7 Not a tax invoice \u00B7 Khandelwal Jewellers",W/2,y+40);
 
   cv.toBlob(function(blob){
     var url=URL.createObjectURL(blob);
