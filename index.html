@@ -193,6 +193,19 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .gen-btn:disabled{background:#ccc;cursor:not-allowed;}
 #preview-area{position:absolute;top:0;left:-9999px;pointer-events:none;}
 
+/* Photo upload */
+.photo-upload-wrap{margin-bottom:12px;}
+.photo-drop{border:2px dashed var(--border);border-radius:var(--r);background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:20px;cursor:pointer;transition:border-color .15s;position:relative;}
+.photo-drop:hover{border-color:var(--brand);}
+.photo-drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.photo-icon{font-size:28px;line-height:1;}
+.photo-drop-lbl{font-size:14px;color:var(--muted);font-weight:500;}
+.photo-drop-sub{font-size:12px;color:#bbb;}
+.photo-preview-wrap{position:relative;border-radius:var(--r);overflow:hidden;border:1px solid var(--border);}
+.photo-preview-wrap img{width:100%;display:block;max-height:280px;object-fit:contain;background:#f5f0e8;}
+.photo-remove{position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,.55);border:none;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:sans-serif;line-height:1;}
+.photo-remove:hover{background:var(--brand);}
+
 /* Recent estimates */
 .recent-wrap{margin-top:12px;}
 .recent-toggle{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-family:"DM Sans",sans-serif;font-size:14px;color:var(--muted);transition:all .15s;}
@@ -299,6 +312,16 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 <div class="set-name-row" id="set-name-row">
   <div class="set-name-lbl">Set / estimate name</div>
   <input type="text" id="set-name" placeholder="e.g. Bridal Set" oninput="updateSetName(false)">
+</div>
+
+<!-- Photo upload -->
+<div class="photo-upload-wrap" id="photo-upload-wrap">
+  <div class="photo-drop" id="photo-drop">
+    <input type="file" id="photo-input" accept="image/*" capture="environment" onchange="handlePhotoUpload(this)">
+    <div class="photo-icon">&#128247;</div>
+    <div class="photo-drop-lbl">Add a product photo</div>
+    <div class="photo-drop-sub">Camera or gallery &middot; Optional</div>
+  </div>
 </div>
 
 <!-- Item blocks rendered here -->
@@ -1022,13 +1045,32 @@ function generateShare(){
   var d=window._cd||{};
   var now=new Date().toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"});
   var rv=r24();
+  // Load logo, then photo (if any), then draw
   var logo=new Image();
-  logo.onload=function(){drawImg(d,nameVal,now,rv,logo,btn);};
-  logo.onerror=function(){drawImg(d,nameVal,now,rv,null,btn);};
+  logo.onload=function(){
+    if (estimatePhoto) {
+      var pImg = new Image();
+      pImg.onload = function(){ drawImg(d,nameVal,now,rv,logo,pImg,btn); };
+      pImg.onerror = function(){ drawImg(d,nameVal,now,rv,logo,null,btn); };
+      pImg.src = estimatePhoto.dataUrl;
+    } else {
+      drawImg(d,nameVal,now,rv,logo,null,btn);
+    }
+  };
+  logo.onerror=function(){
+    if (estimatePhoto) {
+      var pImg = new Image();
+      pImg.onload = function(){ drawImg(d,nameVal,now,rv,null,pImg,btn); };
+      pImg.onerror = function(){ drawImg(d,nameVal,now,rv,null,null,btn); };
+      pImg.src = estimatePhoto.dataUrl;
+    } else {
+      drawImg(d,nameVal,now,rv,null,null,btn);
+    }
+  };
   logo.src=LOGO;
 }
 
-function drawImg(d,setName,now,rv,logo,btn){
+function drawImg(d,setName,now,rv,logo,pImg,btn){
   var W=1000,P=64,C=W-P*2;
   var BRAND="#b4073d",DARK="#1a1208",CREAM="#fdfaf4",GOLD="#e8c96a";
   var RH=50,SG=40,FS=23;
@@ -1039,7 +1081,9 @@ function drawImg(d,setName,now,rv,logo,btn){
   tc.font="400 "+FS+"px DM Sans,sans-serif";
 
   // -- Height calculation --
-  var H=120+72+80+44+32+SG; // header + title area
+  var photoH = estimatePhoto ? Math.round((estimatePhoto.h / estimatePhoto.w) * W) : 0;
+  var photoGap = estimatePhoto ? 48+3 : 0;  // gap + brand line
+  var H=120+72+photoH+photoGap+80+44+32+SG; // header + photo + gap + title area
 
   d.items.forEach(function(item,idx){
     if(multiItem) H+=50+SG; // item label divider
@@ -1085,6 +1129,18 @@ function drawImg(d,setName,now,rv,logo,btn){
   cx.textAlign="left";
 
   var y=120+72;
+  // Draw photo if present (already loaded and passed in)
+  if (pImg) {
+    // Calculate actual drawn height from the loaded image dimensions
+    var drawnPhotoH = Math.round((pImg.naturalHeight / pImg.naturalWidth) * W);
+    // Thin light border around photo
+    cx.fillStyle="#e2d5b8";
+    cx.fillRect(0, y-1, W, drawnPhotoH+2);
+    cx.drawImage(pImg, 0, y, W, drawnPhotoH);
+    // Thin brand line below photo
+    cx.fillStyle="#b4073d"; cx.fillRect(0, y + drawnPhotoH, W, 3);
+    y += drawnPhotoH + 48;  // 48px gap gives item name room to breathe
+  }
   cx.fillStyle=DARK; cx.font="700 68px EB Garamond,Georgia,serif"; cx.fillText(setName,P,y); y+=16;
   cx.fillStyle="#aaa"; cx.font="400 21px DM Sans,sans-serif";
   cx.fillText("Estimate \u00B7 "+now,P,y+30);
@@ -1216,6 +1272,57 @@ function wrapText(cx,text,maxW){
   var words=text.split(" "),lines=[],cur="";
   words.forEach(function(w){var t=cur?cur+" "+w:w;if(cx.measureText(t).width>maxW&&cur){lines.push(cur);cur=w;}else cur=t;});
   if(cur)lines.push(cur);return lines;
+}
+
+// -- Photo state --
+var estimatePhoto = null;  // ImageBitmap or null, session-only
+
+function handlePhotoUpload(input) {
+  if (!input.files || !input.files[0]) return;
+  var file = input.files[0];
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = new Image();
+    img.onload = function() {
+      // Resize to max 1000px wide preserving aspect ratio
+      var maxW = 1000;
+      var scale = img.width > maxW ? maxW / img.width : 1;
+      var w = Math.round(img.width * scale);
+      var h = Math.round(img.height * scale);
+      var cv = document.createElement('canvas');
+      cv.width = w; cv.height = h;
+      var cx = cv.getContext('2d');
+      cx.drawImage(img, 0, 0, w, h);
+      // Store as data URL for canvas use
+      estimatePhoto = { dataUrl: cv.toDataURL('image/jpeg', 0.88), w: w, h: h };
+      showPhotoPreview(e.target.result);
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function showPhotoPreview(src) {
+  var wrap = document.getElementById('photo-upload-wrap');
+  if (!wrap) return;
+  wrap.innerHTML =
+    '<div class="photo-preview-wrap">' +
+      '<img src="' + src + '" alt="Product photo">' +
+      '<button class="photo-remove" onclick="clearPhoto()" title="Remove photo">&#x2715;</button>' +
+    '</div>';
+}
+
+function clearPhoto() {
+  estimatePhoto = null;
+  var wrap = document.getElementById('photo-upload-wrap');
+  if (!wrap) return;
+  wrap.innerHTML =
+    '<div class="photo-drop" id="photo-drop">' +
+      '<input type="file" id="photo-input" accept="image/*" capture="environment" onchange="handlePhotoUpload(this)">' +
+      '<div class="photo-icon">&#128247;</div>' +
+      '<div class="photo-drop-lbl">Add a product photo</div>' +
+      '<div class="photo-drop-sub">Camera or gallery &middot; Optional</div>' +
+    '</div>';
 }
 
 // -- Save & Recent Estimates --
