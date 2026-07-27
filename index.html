@@ -317,7 +317,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 <!-- Photo upload -->
 <div class="photo-upload-wrap" id="photo-upload-wrap">
   <div class="photo-drop" id="photo-drop">
-    <input type="file" id="photo-input" accept="image/*" capture="environment" onchange="handlePhotoUpload(this)">
+    <input type="file" id="photo-input" accept="image/*" onchange="handlePhotoUpload(this)">
     <div class="photo-icon">&#128247;</div>
     <div class="photo-drop-lbl">Add a product photo</div>
     <div class="photo-drop-sub">Camera or gallery &middot; Optional</div>
@@ -1318,7 +1318,7 @@ function clearPhoto() {
   if (!wrap) return;
   wrap.innerHTML =
     '<div class="photo-drop" id="photo-drop">' +
-      '<input type="file" id="photo-input" accept="image/*" capture="environment" onchange="handlePhotoUpload(this)">' +
+      '<input type="file" id="photo-input" accept="image/*" onchange="handlePhotoUpload(this)">' +
       '<div class="photo-icon">&#128247;</div>' +
       '<div class="photo-drop-lbl">Add a product photo</div>' +
       '<div class="photo-drop-sub">Camera or gallery &middot; Optional</div>' +
