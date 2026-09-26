@@ -148,6 +148,33 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .d-amt-display{height:36px;display:flex;align-items:center;font-size:14px;color:var(--muted);font-weight:500;padding:0 4px;}
 .rate-source{font-size:10px;color:var(--brand);margin-top:2px;}
 .rate-source.manual-tag{color:var(--muted);}
+/* Tier quick-select */
+.tier-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.tier-chips{display:flex;gap:5px;flex-wrap:wrap;}
+.tier-chip{height:26px;padding:0 10px;font-size:11px;font-weight:600;font-family:"DM Sans",sans-serif;border:1px solid var(--border);border-radius:13px;background:none;cursor:pointer;color:var(--muted);transition:all .15s;}
+.tier-chip.active{background:var(--dark);color:var(--gold);border-color:var(--dark);}
+.d-summary-bar{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 12px;cursor:pointer;user-select:none;transition:box-shadow .12s;}
+.d-summary-bar:hover{box-shadow:0 1px 6px rgba(0,0,0,.07);}
+.d-summary-bar.open{border-radius:8px 8px 0 0;border-bottom-color:transparent;}
+.d-summary-badge{background:var(--dark);color:var(--gold);font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:.03em;white-space:nowrap;}
+.d-summary-grade{font-size:12px;font-weight:500;color:var(--dark);flex:1;}
+.d-summary-amt{font-size:13px;font-weight:600;color:var(--dark);font-variant-numeric:tabular-nums;white-space:nowrap;}
+.d-summary-arrow{color:var(--muted);font-size:14px;transition:transform .15s;display:inline-block;}
+.d-summary-arrow.open{transform:rotate(90deg);}
+.d-detail-panel{display:none;border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;padding:12px;background:#fff;margin-bottom:0;}
+.d-detail-panel.open{display:block;}
+.d-row-wrap{margin-bottom:8px;}
+/* Rate stepper */
+.rate-stepper{display:flex;align-items:center;gap:0;border:1px solid var(--border);border-radius:6px;overflow:hidden;}
+.rate-stepper input{flex:1;border:none;border-left:1px solid var(--border);border-right:1px solid var(--border);border-radius:0;height:36px;font-size:13px;text-align:right;min-width:100px;}
+.rate-step-btn{width:32px;height:36px;flex-shrink:0;background:var(--surface,#f6f1e7);border:none;cursor:pointer;font-size:16px;color:var(--dark);font-family:sans-serif;line-height:1;transition:background .12s;}
+.rate-step-btn:active{background:var(--border);}
+/* Pcs field */
+.d-calc-group.pc{flex:0 0 60px;min-width:54px;}
+/* Stone name chips */
+.stone-chip-row{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;}
+.stone-chip{height:24px;padding:0 9px;font-size:11px;font-family:"DM Sans",sans-serif;border:1px solid var(--border);border-radius:12px;background:none;cursor:pointer;color:var(--muted);transition:all .12s;}
+.stone-chip.active{background:var(--brand);color:#fff;border-color:var(--brand);}
 .del{background:none;border:none;cursor:pointer;color:#ccc;font-size:20px;width:32px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;transition:color .15s,background .15s;padding:0;font-family:sans-serif;margin-left:auto;flex-shrink:0;}
 .del:hover,.del:active{color:var(--brand);background:#fdecea;}
 .add-btn{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--brand);background:none;border:none;cursor:pointer;font-family:"DM Sans",sans-serif;padding:8px 0 2px;}
@@ -438,18 +465,23 @@ var PAIR_MASTER = {
   "JK":[59000,54000,40000,37000,36000,34000,25000],
   "KL":[54000,49000,35000,31000,30000,28000,19000]
 };
-var SOL_MASTER = {
-  "E":[84000,81000,74000,72000,69000,65000,61000],
-  "F":[79000,76000,62000,61000,57000,57000,49000],
-  "G":[74000,70000,58000,57000,57000,54000,48000],
-  "H":[74000,65000,57000,56000,54000,50000,44000],
-  "I":[63000,61000,47000,45000,43000,41000,33000],
-  "J":[60000,55000,42000,39000,38000,36000,27000],
-  "K":[56000,50000,36000,33000,32000,30000,21000]
-};
+// Solitaire rates vary too much — always manual entry in the tool
+var SOL_MASTER = {};
+
+// ── Diamond quality tier quick-select ────────────────────────────────────────
+var DIAMOND_TIERS = [
+  { label:'Good',    colour:'IJ', clarity:'SI'  },
+  { label:'Better',  colour:'GH', clarity:'VS'  },
+  { label:'Best',    colour:'FG', clarity:'VVS' },
+  { label:'Premium', colour:'EF', clarity:'VVS' }
+];
+
+// ── Stone name quick-select chips ────────────────────────────────────────────
+var STONE_CHIPS = ['Moti','Ruby','Emerald','Meena','Pearl','Turquoise','Coral','Onyx','Sapphire','Polki'];
 function lookupRate(colour, clarity, isSol) {
+  if (isSol) return null;  // Solitaire always manual
   var ci = CLARITIES.indexOf(clarity); if (ci<0) return null;
-  var row = isSol ? SOL_MASTER[colour] : PAIR_MASTER[colour];
+  var row = PAIR_MASTER[colour];
   return row ? row[ci] : null;
 }
 
@@ -883,7 +915,49 @@ function renderItemDiamonds(item){
 }
 
 function buildDiamondRow(item,d){
-  var wrap=document.createElement("div"); wrap.className="d-row"; wrap.id="drow-"+item.id+"-"+d.id;
+  // outer wrapper
+  var rowWrap=document.createElement("div"); rowWrap.className="d-row-wrap"; rowWrap.id="drow-"+item.id+"-"+d.id;
+
+  // ── SUMMARY BAR (collapsed header) ──
+  var summaryBar=document.createElement("div"); summaryBar.className="d-summary-bar"+(d.open?" open":"");
+
+  var badge=document.createElement("span"); badge.className="d-summary-badge";
+  function getBadgeLabel(){
+    var tier=DIAMOND_TIERS.find(function(t){return t.colour===d.colour&&t.clarity===d.clarity;});
+    return tier?tier.label:(d.colour+" "+d.clarity);
+  }
+  badge.textContent=getBadgeLabel();
+
+  var gradeSpan=document.createElement("span"); gradeSpan.className="d-summary-grade";
+  gradeSpan.textContent=d.colour+" · "+d.clarity+(d.wt?" · "+(parseFloat(d.wt)||0).toFixed(3)+" ct":"");
+
+  var amtSpan=document.createElement("span"); amtSpan.className="d-summary-amt"; amtSpan.id="damt-"+item.id+"-"+d.id;
+  amtSpan.textContent="—";
+
+  var delBtn=document.createElement("button"); delBtn.className="del"; delBtn.innerHTML="×";
+  delBtn.onclick=function(e){e.stopPropagation(); removeItemDiamond(item.id,d.id);};
+
+  var arrow=document.createElement("span"); arrow.className="d-summary-arrow"+(d.open?" open":""); arrow.textContent="›";
+
+  summaryBar.appendChild(badge);
+  summaryBar.appendChild(gradeSpan);
+  summaryBar.appendChild(amtSpan);
+  summaryBar.appendChild(delBtn);
+  summaryBar.appendChild(arrow);
+
+  summaryBar.onclick=function(){
+    d.open=!d.open;
+    summaryBar.classList.toggle("open",d.open);
+    arrow.classList.toggle("open",d.open);
+    detailPanel.classList.toggle("open",d.open);
+  };
+
+  rowWrap.appendChild(summaryBar);
+
+  // ── DETAIL PANEL (expanded) ──
+  var detailPanel=document.createElement("div"); detailPanel.className="d-detail-panel"+(d.open?" open":"");
+
+  // Mode toggle + desc
   var top=document.createElement("div"); top.className="d-row-top";
   var modeToggle=document.createElement("div"); modeToggle.className="d-mode-toggle";
   ["Standard","Solitaire"].forEach(function(label,idx){
@@ -897,10 +971,30 @@ function buildDiamondRow(item,d){
   descInput.placeholder=d.mode==="standard"?"Auto — edit if needed":"e.g. Round Brilliant, Polki";
   descInput.value=d.desc||"";
   descInput.oninput=function(){ var it=items.find(function(x){return x.id===item.id;}); if(it){var dd=it.diamonds.find(function(x){return x.id===d.id;}); if(dd) dd.desc=this.value;} };
-  var delBtn=document.createElement("button"); delBtn.className="del"; delBtn.innerHTML="\u00D7";
-  delBtn.onclick=function(){ removeItemDiamond(item.id,d.id); };
-  top.appendChild(modeToggle); top.appendChild(descInput); top.appendChild(delBtn); wrap.appendChild(top);
+  top.appendChild(modeToggle); top.appendChild(descInput); detailPanel.appendChild(top);
 
+  // Quality tier chips (standard only)
+  if (d.mode === "standard") {
+    var tierWrap=document.createElement("div"); tierWrap.className="tier-row"; tierWrap.id="tiers-"+item.id+"-"+d.id;
+    var tierLbl=document.createElement("div"); tierLbl.className="grade-label"; tierLbl.textContent="Quality";
+    tierWrap.appendChild(tierLbl);
+    var tierChips=document.createElement("div"); tierChips.className="tier-chips";
+    DIAMOND_TIERS.forEach(function(t){
+      var chip=document.createElement("button"); chip.className="tier-chip";
+      chip.textContent=t.label;
+      if(d.colour===t.colour && d.clarity===t.clarity) chip.classList.add("active");
+      chip.onclick=function(){
+        setDiamondGrade(item.id,d.id,"colour",t.colour);
+        setDiamondGrade(item.id,d.id,"clarity",t.clarity);
+        tierWrap.querySelectorAll(".tier-chip").forEach(function(c){c.classList.remove("active");});
+        chip.classList.add("active");
+      };
+      tierChips.appendChild(chip);
+    });
+    tierWrap.appendChild(tierChips); detailPanel.appendChild(tierWrap);
+  }
+
+  // Colour + Clarity pills
   var gradeWrap=document.createElement("div");
   var colours=d.mode==="standard"?COLOUR_PAIRS:SOLITAIRE_COLS;
   [["colour",colours],["clarity",CLARITIES]].forEach(function(pair){
@@ -911,34 +1005,68 @@ function buildDiamondRow(item,d){
     var pills=document.createElement("div"); pills.className="pill-group";
     opts.forEach(function(c){
       var pill=document.createElement("button"); pill.className="pill"+(d[field]===c?" active":""); pill.textContent=c;
-      pill.onclick=function(){ setDiamondGrade(item.id,d.id,field,c); };
+      pill.onclick=function(){
+        setDiamondGrade(item.id,d.id,field,c);
+        var tw=document.getElementById("tiers-"+item.id+"-"+d.id);
+        if(tw) tw.querySelectorAll(".tier-chip").forEach(function(x){x.classList.remove("active");});
+      };
       pills.appendChild(pill);
     });
     row.appendChild(pills); gradeWrap.appendChild(row);
   });
-  wrap.appendChild(gradeWrap);
+  detailPanel.appendChild(gradeWrap);
 
+  // Calc row
   var calcRow=document.createElement("div"); calcRow.className="d-calc-row";
-  // Weight
+  // Pcs
+  var pcG=document.createElement("div"); pcG.className="d-calc-group pc";
+  var pcL=document.createElement("label"); pcL.textContent="Pcs";
+  var pcI=document.createElement("input"); pcI.type="number"; pcI.min="0"; pcI.step="1"; pcI.placeholder="—"; pcI.value=d.pcs||""; pcI.style.textAlign="right";
+  pcI.oninput=function(){var it=items.find(function(x){return x.id===item.id;}); if(it){var dd=it.diamonds.find(function(x){return x.id===d.id;}); if(dd) dd.pcs=this.value;}};
+  pcG.appendChild(pcL); pcG.appendChild(pcI); calcRow.appendChild(pcG);
+  // Weight (plain input, no stepper)
   var wtG=document.createElement("div"); wtG.className="d-calc-group wt";
   var wtL=document.createElement("label"); wtL.textContent="Weight (ct)";
   var wtI=document.createElement("input"); wtI.type="number"; wtI.step="0.001"; wtI.min="0"; wtI.placeholder="0.000"; wtI.value=d.wt||""; wtI.style.textAlign="right";
-  wtI.oninput=function(){var it=items.find(function(x){return x.id===item.id;});if(it){var dd=it.diamonds.find(function(x){return x.id===d.id;});if(dd)dd.wt=this.value;}calc();};
+  wtI.oninput=function(){
+    var it=items.find(function(x){return x.id===item.id;}); if(!it) return;
+    var dd=it.diamonds.find(function(x){return x.id===d.id;}); if(!dd) return;
+    dd.wt=this.value;
+    // update summary bar grade span
+    var gs=rowWrap.querySelector(".d-summary-grade");
+    if(gs) gs.textContent=dd.colour+" · "+dd.clarity+(dd.wt?" · "+(parseFloat(dd.wt)||0).toFixed(3)+" ct":"");
+    calc();
+  };
   wtG.appendChild(wtL); wtG.appendChild(wtI); calcRow.appendChild(wtG);
-  // Rate
+  // Rate with +/-100 stepper
   var rG=document.createElement("div"); rG.className="d-calc-group rate";
-  var rL=document.createElement("label"); rL.textContent="Rate (\u20B9/ct)";
+  var rL=document.createElement("label"); rL.textContent="Rate (₹/ct)";
+  var rStepper=document.createElement("div"); rStepper.className="rate-stepper";
+  var rMinus=document.createElement("button"); rMinus.className="rate-step-btn"; rMinus.textContent="−"; rMinus.type="button";
   var rI=document.createElement("input"); rI.type="number"; rI.min="0"; rI.placeholder="0"; rI.value=d.rate||""; rI.id="drate-"+item.id+"-"+d.id; rI.style.textAlign="right";
+  var rPlus=document.createElement("button"); rPlus.className="rate-step-btn"; rPlus.textContent="+"; rPlus.type="button";
+  function stepRate(delta){
+    var it=items.find(function(x){return x.id===item.id;}); if(!it) return;
+    var dd=it.diamonds.find(function(x){return x.id===d.id;}); if(!dd) return;
+    var cur=Math.round(parseFloat(rI.value)||0);
+    var next=Math.max(0,cur+delta);
+    rI.value=next; dd.rate=String(next); dd.rateAuto=false;
+    updateRateSource(item.id,d.id,false); calc();
+  }
+  rMinus.onclick=function(){ stepRate(-100); };
+  rPlus.onclick=function(){ stepRate(100); };
   rI.oninput=function(){var it=items.find(function(x){return x.id===item.id;});if(it){var dd=it.diamonds.find(function(x){return x.id===d.id;});if(dd){dd.rate=this.value;dd.rateAuto=false;}}updateRateSource(item.id,d.id,false);calc();};
+  rStepper.appendChild(rMinus); rStepper.appendChild(rI); rStepper.appendChild(rPlus);
   var rSrc=document.createElement("div"); rSrc.id="drsrc-"+item.id+"-"+d.id; rSrc.className="rate-source"+(d.rateAuto?"":" manual-tag"); rSrc.textContent=d.rateAuto?"From master":"Overridden";
-  rG.appendChild(rL); rG.appendChild(rI); rG.appendChild(rSrc); calcRow.appendChild(rG);
+  rG.appendChild(rL); rG.appendChild(rStepper); rG.appendChild(rSrc); calcRow.appendChild(rG);
   // Amount
   var aG=document.createElement("div"); aG.className="d-calc-group amt";
   var aL=document.createElement("label"); aL.textContent="Amount";
-  var aD=document.createElement("div"); aD.className="d-amt-display"; aD.id="damt-"+item.id+"-"+d.id; aD.textContent="\u2014";
+  var aD=document.createElement("div"); aD.className="d-amt-display"; aD.id="damt-detail-"+item.id+"-"+d.id; aD.textContent="—";
   aG.appendChild(aL); aG.appendChild(aD); calcRow.appendChild(aG);
-  wrap.appendChild(calcRow);
-  return wrap;
+  detailPanel.appendChild(calcRow);
+  rowWrap.appendChild(detailPanel);
+  return rowWrap;
 }
 
 function setDiamondMode(itemId,did,mode){
@@ -998,10 +1126,21 @@ function renderItemStones(item){
     var card=document.createElement("div"); card.className="s-card";
 
     var top=document.createElement("div"); top.className="s-card-top";
-    var nameInp=document.createElement("input"); nameInp.type="text";
+    var nameInp=document.createElement("input"); nameInp.type="text"; nameInp.id="sname-"+item.id+"-"+s.id;
     nameInp.placeholder="Stone / component name"; nameInp.value=s.name||"";
     nameInp.oninput=function(){ updateStone(item.id,s.id,"name",this.value); };
     var unitToggle=document.createElement("div"); unitToggle.className="s-unit-toggle";
+    // Stone name chips
+    var stoneChipRow=document.createElement("div"); stoneChipRow.className="stone-chip-row";
+    STONE_CHIPS.forEach(function(n){
+      var chip=document.createElement("button"); chip.className="stone-chip"+(s.name===n?" active":""); chip.textContent=n; chip.type="button";
+      chip.onclick=function(){
+        nameInp.value=n; updateStone(item.id,s.id,"name",n);
+        stoneChipRow.querySelectorAll(".stone-chip").forEach(function(c){c.classList.toggle("active",c.textContent===n);});
+      };
+      stoneChipRow.appendChild(chip);
+    });
+    card.appendChild(stoneChipRow);
     ["ct","pc"].forEach(function(u){
       var btn=document.createElement("button");
       btn.textContent=u; if(s.unit===u) btn.className="active";
@@ -1209,16 +1348,16 @@ function generateShare(){
 }
 
 function drawImg(d,setName,customerName,now,rv,logo,pImg,btn){
-  var W=1000, P=56, C=W-P*2;
+  var W=1000, P=52, C=W-P*2;
   var BRAND="#b4073d", DARK="#1a1208", CREAM="#fdfaf4", GOLD="#e8c96a";
-  var MUTED="#999", BORDER="#e2d5b8";
+  var MUTED="#aaa", BORDER="#d8cdb0", STRIPE="#f3ede0";
 
   // ── Font sizes ────────────────────────────────────────────────────────────
   var F_SM=17, F_MD=22, F_LG=26, F_XL=60;
 
-  // ── Column X positions (4-col layout) ────────────────────────────────────
-  // Label | Col2 | Col3 | Amount(right-aligned)
-  var X1=P, X2=P+Math.round(C*0.40), X3=P+Math.round(C*0.62), X4=W-P;
+  // ── Column X positions (5-col layout) ────────────────────────────────────
+  // Description | Pcs | Weight | Rate | Amount
+  var X1=P, X2=P+Math.round(C*0.44), X3=P+Math.round(C*0.57), X4=P+Math.round(C*0.74), X5=W-P;
 
   // ── wrapText helper ───────────────────────────────────────────────────────
   var _tc = document.createElement('canvas').getContext('2d');
@@ -1258,7 +1397,7 @@ function drawImg(d,setName,customerName,now,rv,logo,pImg,btn){
   R('subtitle', 36, { date: 'Estimate \u00B7 '+now, purity: item0purity });
   if(customerName) R('customer', 32, { name: 'Prepared for: '+customerName });
   R('rule', 6, { color: BRAND });
-  R('spacer', 28);
+  R('spacer', 14);
 
   // Items
   d.items.forEach(function(item, idx) {
@@ -1269,85 +1408,87 @@ function drawImg(d,setName,customerName,now,rv,logo,pImg,btn){
       if (item.sku) R('sku', 28, { sku: item.sku });
     }
 
-    // Metal
-    R('section-label', 44, { text: 'METAL \u00B7 '+item.purity+'KT' });
+    // Gross weight summary \u2014 top-level info line
     if ((item.gross||0) > 0) {
-      var gwParts = ['Gross: '+(item.gross||0).toFixed(3)+' gm'];
-      if ((item.ow||0) > 0) gwParts.push('Other: '+item.ow.toFixed(3)+' gm');
-      gwParts.push('Net gold: '+item.nw.toFixed(3)+' gm');
-      R('info-line', 34, { text: gwParts.join('  \u2502  ') });
+      var gwParts = ['Gross  '+(item.gross||0).toFixed(3)+' gm'];
+      if ((item.ow||0) > 0) gwParts.push('Other  '+item.ow.toFixed(3)+' gm');
+      gwParts.push('Net gold  '+item.nw.toFixed(3)+' gm');
+      R('info-line', 36, { text: gwParts.join('   \u00B7   ') });
     }
-    R('data-row', 46, {
-      c1: 'Gold '+item.purity+'kt',
-      c2: (item.nw||0).toFixed(3)+' gm',
-      c3: '\u20B9'+Math.round(item.gr||0).toLocaleString('en-IN')+'/gm',
-      c4: '\u20B9'+Math.round(item.ga||0).toLocaleString('en-IN')
+    R('spacer', 14);
+
+    // Metal
+    R('section-label', 34, { text: 'METAL \u00B7 '+item.purity+'KT' });
+    R('col-header', 28, { c1:'', c2:'', c3:'Weight', c4:'Rate', c5:'Amount' });
+    R('data-row', 44, {
+      c1: 'Gold '+item.purity+'kt', c2:'',
+      c3: (item.nw||0).toFixed(3)+' gm',
+      c4: '\u20B9'+Math.round(item.gr||0).toLocaleString('en-IN')+'/gm',
+      c5: '\u20B9'+Math.round(item.ga||0).toLocaleString('en-IN'), stripe:false
     });
     if (item.makingMode === 'pct') {
-      R('data-row', 46, {
-        c1: 'Making',
-        c2: (item.makingPctVal||0).toFixed(1)+'% of '+(item.makingPctBasis==='gross'?'gross':'net')+' gold',
-        c3: '',
-        c4: '\u20B9'+Math.round(item.ma||0).toLocaleString('en-IN')
+      R('data-row', 44, {
+        c1: 'Making', c2:'',
+        c3: (item.makingPctVal||0).toFixed(1)+'% of '+(item.makingPctBasis==='gross'?'gross':'net'),
+        c4: '',
+        c5: '\u20B9'+Math.round(item.ma||0).toLocaleString('en-IN'), stripe:true
       });
     } else {
-      R('data-row', 46, {
-        c1: 'Making',
-        c2: (item.mb||0).toFixed(3)+' gm',
-        c3: '\u20B9'+Math.round(item.mr||0).toLocaleString('en-IN')+'/gm',
-        c4: '\u20B9'+Math.round(item.ma||0).toLocaleString('en-IN')
+      R('data-row', 44, {
+        c1: 'Making', c2:'',
+        c3: (item.mb||0).toFixed(3)+' gm',
+        c4: '\u20B9'+Math.round(item.mr||0).toLocaleString('en-IN')+'/gm',
+        c5: '\u20B9'+Math.round(item.ma||0).toLocaleString('en-IN'), stripe:true
       });
     }
-    R('spacer', 16);
+    R('spacer', 18);
 
     // Diamonds
     var dRows = item.diamonds.filter(function(x){return parseFloat(x.wt)>0&&parseFloat(x.rate)>0;});
     if (dRows.length) {
-      R('divider', 16, { color: BORDER });
-      R('section-label', 44, { text: 'DIAMONDS' });
-      R('col-header', 32, { c1:'Description', c2:'Weight', c3:'Rate', c4:'Amount' });
-      R('spacer', 8);
-      dRows.forEach(function(dr) {
-        R('data-row', 46, {
-          c1: dr.desc||(dr.colour+' '+dr.clarity),
-          c2: parseFloat(dr.wt||0).toFixed(3)+' ct',
-          c3: '\u20B9'+Math.round(parseFloat(dr.rate||0)).toLocaleString('en-IN'),
-          c4: '\u20B9'+Math.round(dr.amt||0).toLocaleString('en-IN')
+      R('section-label', 34, { text: 'DIAMONDS' });
+      R('col-header', 28, { c1:'Description', c2:'Pcs', c3:'Weight', c4:'Rate', c5:'Amount' });
+      dRows.forEach(function(dr,i) {
+        R('data-row', 44, {
+          c1: dr.colour+' · '+dr.clarity,
+          c2: dr.pcs ? String(dr.pcs) : '',
+          c3: parseFloat(dr.wt||0).toFixed(3)+' ct',
+          c4: '\u20B9'+Math.round(parseFloat(dr.rate||0)).toLocaleString('en-IN'),
+          c5: '\u20B9'+Math.round(dr.amt||0).toLocaleString('en-IN'),
+          stripe: i%2===1
         });
       });
-      R('spacer', 16);
+      R('spacer', 18);
     }
 
     // Stones
     var sRows = item.stones.filter(function(x){return parseFloat(x.qty)>0&&parseFloat(x.rate)>0;});
     if (sRows.length) {
-      R('divider', 16, { color: BORDER });
-      R('section-label', 44, { text: 'COLOUR STONES & COMPONENTS' });
-      R('col-header', 32, { c1:'Component', c2:'Qty', c3:'Rate', c4:'Amount' });
-      R('spacer', 8);
-      sRows.forEach(function(sr) {
-        R('data-row', 46, {
+      R('section-label', 34, { text: 'COLOUR STONES & COMPONENTS' });
+      R('col-header', 28, { c1:'Component', c2:'Pcs', c3:'Qty', c4:'Rate', c5:'Amount' });
+      sRows.forEach(function(sr,i) {
+        R('data-row', 44, {
           c1: sr.name||'\u2014',
-          c2: sr.unit==='pc'?'1 pc':parseFloat(sr.qty||0).toFixed(3)+' ct',
-          c3: '\u20B9'+Math.round(parseFloat(sr.rate||0)).toLocaleString('en-IN'),
-          c4: '\u20B9'+Math.round(sr.amt||0).toLocaleString('en-IN')
+          c2: sr.unit==='pc' ? String(Math.round(parseFloat(sr.qty||0))) : '',
+          c3: sr.unit==='pc' ? '' : parseFloat(sr.qty||0).toFixed(3)+' ct',
+          c4: '\u20B9'+Math.round(parseFloat(sr.rate||0)).toLocaleString('en-IN'),
+          c5: '\u20B9'+Math.round(sr.amt||0).toLocaleString('en-IN'),
+          stripe: i%2===1
         });
       });
-      R('spacer', 16);
+      R('spacer', 18);
     }
 
     // Notes
     var noteLines = item.notes ? wrap(item.notes.trim(), C-40, '400 '+F_SM+'px DM Sans,sans-serif') : [];
     if (noteLines.length) {
-      R('divider', 16, { color: BORDER });
-      R('section-label', 44, { text: 'NOTES' });
+      R('section-label', 34, { text: 'NOTES' });
       R('notes-block', 20 + noteLines.length*30 + 20, { lines: noteLines });
-      R('spacer', 16);
+      R('spacer', 18);
     }
 
     // Item subtotal (multi only)
     if (multiItem) {
-      R('divider', 16, { color: BORDER });
       R('item-subtotal', 50, {
         label: itemDisplayName(item)+' subtotal',
         amount: '\u20B9'+Math.round(item.sub||0).toLocaleString('en-IN')
@@ -1479,32 +1620,40 @@ function drawImg(d,setName,customerName,now,rv,logo,pImg,btn){
         break;
 
       case 'info-line':
-        cx.fillStyle='#666'; cx.font='400 19px DM Sans,sans-serif';
-        cx.fillText(row.text,P,y+22);
+        cx.fillStyle='#3a2e1e'; cx.font='400 18px DM Sans,sans-serif';
+        cx.fillText(row.text,P,y+row.h-8);
         break;
 
       case 'section-label':
-        cx.fillStyle=BRAND; cx.font='600 17px DM Sans,sans-serif';
-        cx.fillText(row.text,P,y+row.h-10);
+        cx.fillStyle=BRAND; cx.font='600 14px DM Sans,sans-serif';
+        cx.fillText(row.text,P,y+row.h-8);
+        cx.fillStyle=BORDER; cx.fillRect(P,y+row.h-1,C,1);
         break;
 
       case 'col-header':
-        cx.fillStyle=MUTED; cx.font='500 15px DM Sans,sans-serif';
-        cx.textAlign='left';  cx.fillText(row.c1,X1,y+row.h-4);
-        cx.textAlign='right'; cx.fillText(row.c2,X2,y+row.h-4);
-        cx.fillText(row.c3,X3,y+row.h-4);
-        cx.fillText(row.c4,X4,y+row.h-4);
+        cx.fillStyle=MUTED; cx.font='500 13px DM Sans,sans-serif';
+        cx.textAlign='left';  cx.fillText(row.c1||'',X1,y+row.h-4);
+        cx.textAlign='right';
+        if(row.c2) cx.fillText(row.c2,X2,y+row.h-4);
+        if(row.c3) cx.fillText(row.c3,X3,y+row.h-4);
+        if(row.c4) cx.fillText(row.c4,X4,y+row.h-4);
+        if(row.c5) cx.fillText(row.c5,X5,y+row.h-4);
         cx.textAlign='left';
-        // Underline
         cx.fillStyle=BORDER; cx.fillRect(P,y+row.h,C,1);
         break;
 
       case 'data-row':
+        if(row.stripe){ cx.fillStyle=STRIPE; cx.fillRect(0,y,W,row.h); }
         cx.fillStyle=DARK; cx.font='400 '+F_MD+'px DM Sans,sans-serif';
-        cx.textAlign='left';  cx.fillText(row.c1,X1,y+row.h-10);
-        cx.textAlign='right'; cx.fillText(row.c2,X2,y+row.h-10);
-        cx.fillText(row.c3,X3,y+row.h-10);
-        cx.fillText(row.c4,X4,y+row.h-10);
+        cx.textAlign='left';  cx.fillText(row.c1||'',X1,y+row.h-10);
+        cx.textAlign='right';
+        cx.fillStyle=MUTED; cx.font='400 20px DM Sans,sans-serif';
+        if(row.c2) cx.fillText(row.c2,X2,y+row.h-10);
+        cx.fillStyle=DARK; cx.font='400 '+F_MD+'px DM Sans,sans-serif';
+        if(row.c3) cx.fillText(row.c3,X3,y+row.h-10);
+        if(row.c4) cx.fillText(row.c4,X4,y+row.h-10);
+        cx.font='500 '+F_MD+'px DM Sans,sans-serif';
+        if(row.c5) cx.fillText(row.c5,X5,y+row.h-10);
         cx.textAlign='left';
         break;
 
@@ -1539,7 +1688,7 @@ function drawImg(d,setName,customerName,now,rv,logo,pImg,btn){
         var fnt = row.bold ? '600 '+F_MD+'px DM Sans,sans-serif' : '400 '+F_MD+'px DM Sans,sans-serif';
         cx.fillStyle=col; cx.font=fnt;
         cx.textAlign='left';  cx.fillText(row.label,P,y+row.h-10);
-        cx.textAlign='right'; cx.fillText(row.amount,W-P,y+row.h-10);
+        cx.textAlign='right'; cx.fillText(row.amount,X5,y+row.h-10);
         cx.textAlign='left';
         break;
 
@@ -1547,7 +1696,7 @@ function drawImg(d,setName,customerName,now,rv,logo,pImg,btn){
         cx.fillStyle=DARK;  cx.font='700 '+F_XL+'px EB Garamond,Georgia,serif';
         cx.textAlign='left';  cx.fillText('Final',P,y+row.h-8);
         cx.fillStyle=BRAND; cx.font='700 '+F_XL+'px EB Garamond,Georgia,serif';
-        cx.textAlign='right'; cx.fillText(row.amount,W-P,y+row.h-8);
+        cx.textAlign='right'; cx.fillText(row.amount,X5,y+row.h-8);
         cx.textAlign='left';
         break;
 
@@ -1898,21 +2047,7 @@ function fetchDiamondRates() {
           });
         }
       }
-      // Update SOL_MASTER
-      if(json.solitaires){
-        var scols = json.solitaires.cols; // ["E","F","G","H","I","J","K"]
-        var srows = json.solitaires.rows;
-        if(scols && srows){
-          scols.forEach(function(colour,ci){
-            var rateRow = [];
-            ["VVS","VVS-VS","VS","VS-SI","SI","SI-I","I"].forEach(function(cl){
-              rateRow.push(srows[cl] ? (srows[cl][ci]||0) : 0);
-            });
-            SOL_MASTER[colour] = rateRow;
-          });
-        }
-      }
-      console.log("Diamond rates updated from Sheet");
+      console.log("Diamond pair rates updated from Sheet");
     })
     .catch(function(e){
       console.log("Diamond rates: using built-in master (sheet unavailable)");
