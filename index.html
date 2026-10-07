@@ -1832,28 +1832,28 @@ function generateShare(action){
     logo.onload=function(){
       if (estimatePhoto) {
         var pImg = new Image();
-        pImg.onload = function(){ drawImg(d,nameVal,customerName,now,rv,logo,pImg,btn,action); };
-        pImg.onerror = function(){ drawImg(d,nameVal,customerName,now,rv,logo,null,btn,action); };
+        pImg.onload = function(){ drawImg(d,nameVal,customerName,now,rv,logo,pImg,btn,action,origText); };
+        pImg.onerror = function(){ drawImg(d,nameVal,customerName,now,rv,logo,null,btn,action,origText); };
         pImg.src = estimatePhoto.dataUrl;
       } else {
-        drawImg(d,nameVal,customerName,now,rv,logo,null,btn,action);
+        drawImg(d,nameVal,customerName,now,rv,logo,null,btn,action,origText);
       }
     };
     logo.onerror=function(){
       if (estimatePhoto) {
         var pImg = new Image();
-        pImg.onload = function(){ drawImg(d,nameVal,customerName,now,rv,null,pImg,btn,action); };
-        pImg.onerror = function(){ drawImg(d,nameVal,customerName,now,rv,null,null,btn,action); };
+        pImg.onload = function(){ drawImg(d,nameVal,customerName,now,rv,null,pImg,btn,action,origText); };
+        pImg.onerror = function(){ drawImg(d,nameVal,customerName,now,rv,null,null,btn,action,origText); };
         pImg.src = estimatePhoto.dataUrl;
       } else {
-        drawImg(d,nameVal,customerName,now,rv,null,null,btn,action);
+        drawImg(d,nameVal,customerName,now,rv,null,null,btn,action,origText);
       }
     };
     logo.src=LOGO;
   });
 }
 
-function drawImg(d,setName,customerName,now,rv,logo,pImg,btn,action){
+function drawImg(d,setName,customerName,now,rv,logo,pImg,btn,action,origText){
   // ── Canvas constants ──────────────────────────────────────────────────────
   var W=1080, P=56, C=W-P*2;
   var BRAND="#b4073d", DARK="#1a1208", CREAM="#fdfaf4", GOLD="#c8a84b";
