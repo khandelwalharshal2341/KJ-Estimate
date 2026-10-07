@@ -808,6 +808,114 @@ textarea {
     animation-duration: 0.01ms !important;
   }
 }
+
+/* ══ TWEAK PANEL ════════════════════════════════════════════════ */
+#tweak-tab {
+  position: fixed; right: 0; top: 50%; transform: translateY(-50%);
+  z-index: 9999; writing-mode: vertical-rl; text-orientation: mixed;
+  background: var(--brand); color: #fff;
+  font-size: var(--fs-xs); font-weight: 600; letter-spacing: 0.08em;
+  padding: 10px 6px; border-radius: var(--r-sm) 0 0 var(--r-sm);
+  cursor: pointer; user-select: none;
+  transition: opacity 0.2s;
+}
+#tweak-tab:hover { opacity: 0.85; }
+#tweak-panel {
+  display: none;
+  position: fixed; top: 0; right: 0; bottom: 0;
+  width: 300px; z-index: 9998;
+  background: rgba(30,20,8,0.96);
+  backdrop-filter: blur(16px);
+  color: #e8dcc8;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 12px;
+  overflow-y: auto;
+  box-shadow: -4px 0 24px rgba(0,0,0,0.4);
+}
+#tweak-panel.open { display: flex; flex-direction: column; }
+.tp-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid rgba(180,150,100,0.25);
+  position: sticky; top: 0; background: rgba(30,20,8,0.98);
+  z-index: 1;
+}
+.tp-header-title { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #c8a84b; }
+.tp-header-btns { display: flex; gap: 6px; }
+.tp-btn {
+  font-size: 10px; font-weight: 600; padding: 3px 8px;
+  border-radius: 4px; border: 1px solid rgba(180,150,100,0.35);
+  background: transparent; color: #c8a84b; cursor: pointer;
+  font-family: inherit; transition: background 0.15s;
+}
+.tp-btn:hover { background: rgba(180,150,100,0.15); }
+.tp-btn.tp-close { color: #e8dcc8; border-color: rgba(232,220,200,0.25); }
+.tp-section-title {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: #c8a84b;
+  padding: 10px 14px 6px;
+  border-top: 1px solid rgba(180,150,100,0.18);
+  margin-top: 4px;
+}
+.tp-row {
+  display: grid; grid-template-columns: 1fr 52px 42px;
+  align-items: center; gap: 6px;
+  padding: 5px 14px;
+}
+.tp-row:hover { background: rgba(255,255,255,0.03); }
+.tp-label { font-size: 11px; color: #b0a090; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tp-slider { width: 100%; accent-color: #c8a84b; cursor: pointer; }
+.tp-num {
+  width: 42px; text-align: right; background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(180,150,100,0.25); border-radius: 3px;
+  color: #e8dcc8; font-family: inherit; font-size: 11px; padding: 2px 4px;
+}
+.tp-num:focus { outline: none; border-color: #c8a84b; }
+.tp-reset-btn {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 1px solid rgba(180,150,100,0.3); background: transparent;
+  color: #c8a84b; font-size: 10px; line-height: 1;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  padding: 0; font-family: inherit; flex-shrink: 0;
+  transition: background 0.15s;
+}
+.tp-reset-btn:hover { background: rgba(180,150,100,0.2); }
+.tp-row-4 {
+  display: grid; grid-template-columns: 1fr 52px 42px 16px;
+  align-items: center; gap: 6px; padding: 5px 14px;
+}
+.tp-row-4:hover { background: rgba(255,255,255,0.03); }
+.tp-footer {
+  padding: 10px 14px 16px;
+  border-top: 1px solid rgba(180,150,100,0.2);
+  display: flex; flex-direction: column; gap: 8px;
+  margin-top: auto;
+}
+.tp-vp-btns { display: flex; gap: 5px; }
+.tp-vp-btn {
+  flex: 1; font-size: 10px; font-weight: 600; padding: 4px 0;
+  border-radius: 4px; border: 1px solid rgba(180,150,100,0.3);
+  background: transparent; color: #b0a090; cursor: pointer;
+  font-family: inherit; transition: background 0.15s, color 0.15s;
+}
+.tp-vp-btn.active { background: rgba(180,150,100,0.2); color: #e8dcc8; border-color: #c8a84b; }
+.tp-print-btn {
+  font-size: 10px; font-weight: 600; padding: 4px 0;
+  border-radius: 4px; border: 1px solid rgba(180,150,100,0.3);
+  background: transparent; color: #b0a090; cursor: pointer;
+  font-family: inherit; transition: background 0.15s, color 0.15s; width: 100%;
+}
+.tp-print-btn.active { background: rgba(180,150,100,0.2); color: #e8dcc8; border-color: #c8a84b; }
+.tp-copy-btn {
+  font-size: 10px; font-weight: 600; padding: 5px 0;
+  border-radius: 4px; border: 1px solid rgba(200,168,75,0.5);
+  background: rgba(200,168,75,0.1); color: #c8a84b; cursor: pointer;
+  font-family: inherit; transition: background 0.15s; width: 100%;
+}
+.tp-copy-btn:hover { background: rgba(200,168,75,0.2); }
+.tp-copied { color: #5db85d; font-size: 10px; text-align: center; display: none; }
+.tp-vp-wrap { max-width: var(--tp-vp-width, none); margin: 0 auto; transition: max-width 0.2s; }
+
 </style>
 </head>
 <body>
@@ -2623,6 +2731,277 @@ document.addEventListener("DOMContentLoaded", function() {
   fetchDiamondRates();
 });
 </script>
+
+<!-- ══ TWEAK PANEL ══════════════════════════════════════════════ -->
+<div id="tweak-tab">TWEAK</div>
+<div id="tweak-panel">
+  <div class="tp-header">
+    <span class="tp-header-title">Layout Tweaks</span>
+    <div class="tp-header-btns">
+      <button class="tp-btn" id="tp-reset-all">Reset all</button>
+      <button class="tp-btn tp-close" id="tp-close">✕</button>
+    </div>
+  </div>
+  <div id="tp-controls"></div>
+  <div class="tp-footer">
+    <div>
+      <div style="font-size:10px;color:#b0a090;margin-bottom:5px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;">Viewport</div>
+      <div class="tp-vp-btns">
+        <button class="tp-vp-btn active" data-w="">Full</button>
+        <button class="tp-vp-btn" data-w="1280px">Desktop</button>
+        <button class="tp-vp-btn" data-w="768px">Tablet</button>
+        <button class="tp-vp-btn" data-w="390px">Mobile</button>
+      </div>
+    </div>
+    <button class="tp-print-btn" id="tp-print-toggle">⬜ Print preview</button>
+    <button class="tp-copy-btn" id="tp-copy">Copy changed values</button>
+    <div class="tp-copied" id="tp-copied">✓ Copied to clipboard</div>
+  </div>
+</div>
+
+<script>
+(function() {
+  // ── Variable definitions ─────────────────────────────────────────────────
+  // Each entry: [cssVar, label, min, max, step, section, unit]
+  var VARS = [
+    // Brand
+    // (colours handled separately — sliders for px/numeric only)
+
+    // Spacing
+    ["--sp-1",  "sp-1",  0, 20,  1, "Spacing", "px"],
+    ["--sp-2",  "sp-2",  0, 32,  1, "Spacing", "px"],
+    ["--sp-3",  "sp-3",  0, 40,  1, "Spacing", "px"],
+    ["--sp-4",  "sp-4",  0, 48,  1, "Spacing", "px"],
+    ["--sp-5",  "sp-5",  0, 56,  1, "Spacing", "px"],
+    ["--sp-6",  "sp-6",  0, 64,  1, "Spacing", "px"],
+    ["--sp-8",  "sp-8",  0, 80,  1, "Spacing", "px"],
+
+    // Heights
+    ["--h-xs",      "h-xs",       20, 80,  1, "Heights", "px"],
+    ["--h-sm",      "h-sm",       24, 80,  1, "Heights", "px"],
+    ["--h-md",      "h-md",       28, 100, 1, "Heights", "px"],
+    ["--h-lg",      "h-lg",       32, 120, 1, "Heights", "px"],
+    ["--d-input-h", "d-input-h",  40, 160, 1, "Heights", "px"],
+
+    // Radii
+    ["--r-card", "r-card", 0, 32, 1, "Radii", "px"],
+    ["--r-el",   "r-el",   0, 24, 1, "Radii", "px"],
+    ["--r-pill", "r-pill", 0, 40, 1, "Radii", "px"],
+    ["--r-chip", "r-chip", 0, 32, 1, "Radii", "px"],
+    ["--r-sm",   "r-sm",   0, 20, 1, "Radii", "px"],
+
+    // Type scale
+    ["--fs-2xs",  "fs-2xs",  8,  18, 1, "Type", "px"],
+    ["--fs-xs",   "fs-xs",   8,  20, 1, "Type", "px"],
+    ["--fs-sm",   "fs-sm",   9,  22, 1, "Type", "px"],
+    ["--fs-md",   "fs-md",   10, 24, 1, "Type", "px"],
+    ["--fs-base", "fs-base", 10, 28, 1, "Type", "px"],
+    ["--fs-lg",   "fs-lg",   10, 30, 1, "Type", "px"],
+    ["--fs-xl",   "fs-xl",   10, 32, 1, "Type", "px"],
+    ["--fs-2xl",  "fs-2xl",  12, 36, 1, "Type", "px"],
+    ["--fs-3xl",  "fs-3xl",  14, 48, 1, "Type", "px"],
+
+    // Layout
+    ["--content-max", "content-max", 320, 1200, 4, "Layout", "px"],
+    ["--side-pad",    "side-pad",    0,   48,   1, "Layout", "px"],
+    ["--hdr-h",       "hdr-h",       40,  120,  1, "Layout", "px"],
+
+    // Diamond calc
+    ["--d-input-h", "d-input-h", 40, 160, 1, "Diamond", "px"],
+  ];
+
+  // dedupe (--d-input-h appears twice intentionally in Heights + Diamond for discoverability)
+  var seen = {};
+  VARS = VARS.filter(function(v) {
+    if (seen[v[0]]) return false;
+    seen[v[0]] = true;
+    return true;
+  });
+
+  var root = document.documentElement;
+  var defaults = {};
+  var overrides = {};
+
+  function readDefault(v) {
+    var raw = getComputedStyle(root).getPropertyValue(v).trim();
+    return parseFloat(raw) || 0;
+  }
+
+  function initDefaults() {
+    VARS.forEach(function(v) {
+      defaults[v[0]] = readDefault(v[0]);
+    });
+  }
+
+  function applyVar(v, val) {
+    root.style.setProperty(v, val + "px");
+  }
+
+  // ── Build controls ───────────────────────────────────────────────────────
+  function buildControls() {
+    var container = document.getElementById("tp-controls");
+    var currentSection = null;
+
+    VARS.forEach(function(entry) {
+      var varName = entry[0], label = entry[1], min = entry[2], max = entry[3],
+          step = entry[4], section = entry[5];
+      var defVal = defaults[varName];
+
+      if (section !== currentSection) {
+        currentSection = section;
+        var title = document.createElement("div");
+        title.className = "tp-section-title";
+        title.textContent = section;
+        container.appendChild(title);
+      }
+
+      var row = document.createElement("div");
+      row.className = "tp-row-4";
+
+      var lbl = document.createElement("div");
+      lbl.className = "tp-label";
+      lbl.textContent = label;
+      lbl.title = varName;
+
+      var slider = document.createElement("input");
+      slider.type = "range"; slider.className = "tp-slider";
+      slider.min = min; slider.max = max; slider.step = step;
+      slider.value = defVal;
+
+      var num = document.createElement("input");
+      num.type = "number"; num.className = "tp-num";
+      num.min = min; num.max = max; num.step = step;
+      num.value = defVal;
+
+      var resetBtn = document.createElement("button");
+      resetBtn.className = "tp-reset-btn";
+      resetBtn.title = "Reset to " + defVal + "px";
+      resetBtn.textContent = "↺";
+
+      function update(val) {
+        val = Math.min(max, Math.max(min, parseFloat(val) || 0));
+        slider.value = val;
+        num.value = val;
+        applyVar(varName, val);
+        if (val !== defVal) {
+          overrides[varName] = val;
+          lbl.style.color = "#c8a84b";
+        } else {
+          delete overrides[varName];
+          lbl.style.color = "";
+        }
+      }
+
+      slider.oninput = function() { update(this.value); };
+      num.oninput = function() { update(this.value); };
+      num.onchange = function() { update(this.value); };
+      resetBtn.onclick = function() { update(defVal); };
+
+      row.appendChild(lbl);
+      row.appendChild(slider);
+      row.appendChild(num);
+      row.appendChild(resetBtn);
+      container.appendChild(row);
+    });
+  }
+
+  // ── Panel open/close ─────────────────────────────────────────────────────
+  var panel = document.getElementById("tweak-panel");
+  var tab = document.getElementById("tweak-tab");
+  var built = false;
+
+  function openPanel() {
+    if (!built) {
+      initDefaults();
+      buildControls();
+      built = true;
+    }
+    panel.classList.add("open");
+    tab.style.display = "none";
+  }
+  function closePanel() {
+    panel.classList.remove("open");
+    tab.style.display = "";
+  }
+
+  tab.addEventListener("click", openPanel);
+  document.getElementById("tp-close").addEventListener("click", closePanel);
+
+  // Shift+T or ?tweak
+  document.addEventListener("keydown", function(e) {
+    if (e.shiftKey && e.key === "T") {
+      panel.classList.contains("open") ? closePanel() : openPanel();
+    }
+  });
+  if (window.location.search.indexOf("tweak") !== -1) {
+    document.addEventListener("DOMContentLoaded", openPanel);
+  }
+
+  // ── Reset all ────────────────────────────────────────────────────────────
+  document.getElementById("tp-reset-all").addEventListener("click", function() {
+    var rows = document.querySelectorAll("#tp-controls .tp-row-4");
+    VARS.forEach(function(entry, i) {
+      var row = rows[i];
+      if (!row) return;
+      var slider = row.querySelector(".tp-slider");
+      var num = row.querySelector(".tp-num");
+      var lbl = row.querySelector(".tp-label");
+      var defVal = defaults[entry[0]];
+      slider.value = defVal; num.value = defVal;
+      applyVar(entry[0], defVal);
+      delete overrides[entry[0]];
+      lbl.style.color = "";
+    });
+  });
+
+  // ── Copy changed values ──────────────────────────────────────────────────
+  document.getElementById("tp-copy").addEventListener("click", function() {
+    var keys = Object.keys(overrides);
+    if (!keys.length) { alert("No changes yet."); return; }
+    var lines = keys.map(function(k) {
+      return "  " + k + ": " + overrides[k] + "px; /* was " + defaults[k] + "px */";
+    });
+    var text = ":root {
+" + lines.join("
+") + "
+}";
+    navigator.clipboard.writeText(text).then(function() {
+      var el = document.getElementById("tp-copied");
+      el.style.display = "block";
+      setTimeout(function() { el.style.display = "none"; }, 2000);
+    });
+  });
+
+  // ── Viewport preview ─────────────────────────────────────────────────────
+  var vpWrap = document.querySelector(".tp-vp-wrap");
+  // Wrap body children if not already wrapped
+  document.addEventListener("DOMContentLoaded", function() {
+    // vpWrap is a passthrough at full width; vp buttons control max-width
+  });
+  document.querySelectorAll(".tp-vp-btn").forEach(function(btn) {
+    btn.addEventListener("click", function() {
+      document.querySelectorAll(".tp-vp-btn").forEach(function(b) { b.classList.remove("active"); });
+      btn.classList.add("active");
+      var w = btn.dataset.w || "";
+      root.style.setProperty("--tp-vp-width", w || "none");
+      // Apply to main content wrapper
+      var main = document.querySelector(".main");
+      if (main) main.style.maxWidth = w || "";
+    });
+  });
+
+  // ── Print preview ────────────────────────────────────────────────────────
+  var printActive = false;
+  document.getElementById("tp-print-toggle").addEventListener("click", function() {
+    printActive = !printActive;
+    this.classList.toggle("active", printActive);
+    this.textContent = printActive ? "☑ Print preview (on)" : "⬜ Print preview";
+    document.body.classList.toggle("tp-print-preview", printActive);
+  });
+
+})();
+</script>
+
 </body>
 </html>
 </body>
