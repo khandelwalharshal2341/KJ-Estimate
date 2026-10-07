@@ -38,7 +38,7 @@
   --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px; --sp-6:24px; --sp-8:32px;
 
   /* Heights (min touch 44px) */
-  --h-xs:28px; --h-sm:36px; --h-md:44px; --h-lg:52px;
+  --h-xs:28px; --h-sm:36px; --h-md:44px; --h-lg:52px; --d-input-h:88px;
 
   /* Radii */
   --r-card:14px; --r-el:8px; --r-pill:22px; --r-chip:14px; --r-sm:6px;
@@ -575,13 +575,13 @@ textarea {
 .d-calc-group.rate .rate-row {
   display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap;
 }
-.d-calc-group.rate .rate-stepper { flex: 1; max-width: 200px; min-width: 140px; }
+.d-calc-group.rate .rate-stepper { flex: 1; max-width: 200px; min-width: 140px; height: var(--d-input-h); }
 .d-calc-group.rate .rate-source { flex-shrink: 0; white-space: nowrap; }
 .d-calc-group { display: flex; flex-direction: column; gap: 4px; }
 .d-calc-group label { font-size: var(--fs-xs); color: var(--muted); white-space: nowrap; }
 .d-calc-group input { height: var(--h-md); }
 .d-calc-group.pc input,
-.d-calc-group.wt input { height: 88px; font-size: var(--fs-lg); font-weight: 500; }
+.d-calc-group.wt input { height: var(--d-input-h); font-size: var(--fs-lg); font-weight: 500; }
 .d-amt-display {
   height: var(--h-md); display: flex; align-items: center; justify-content: flex-end;
   font-size: var(--fs-sm); font-weight: 500; color: var(--text);
