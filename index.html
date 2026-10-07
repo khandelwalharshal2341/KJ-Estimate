@@ -561,18 +561,15 @@ textarea {
 
 /* Diamond calc row */
 .d-calc-row-wrap {
-  overflow-x: auto; -webkit-overflow-scrolling: touch;
   margin-top: var(--sp-2);
-  scrollbar-width: none;
 }
-.d-calc-row-wrap::-webkit-scrollbar { display: none; }
 .d-calc-row {
   display: grid;
-  grid-template-columns: 72px 1fr 100px;
+  grid-template-columns: 72px 1fr;
   gap: var(--sp-2); align-items: end;
-  min-width: 260px;
 }
-.d-calc-group.rate {
+.d-calc-group.rate,
+.d-calc-group.amt {
   grid-column: 1 / -1;
 }
 .d-calc-group.rate .rate-row {
