@@ -576,10 +576,10 @@ textarea {
   grid-column: 1 / -1;
 }
 .d-calc-group.rate .rate-row {
-  display: flex; align-items: center; gap: var(--sp-2);
+  display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap;
 }
-.d-calc-group.rate .rate-stepper { flex: 1; max-width: 200px; }
-.d-calc-group.rate .rate-source { flex-shrink: 0; }
+.d-calc-group.rate .rate-stepper { flex: 1; max-width: 200px; min-width: 140px; }
+.d-calc-group.rate .rate-source { flex-shrink: 0; white-space: nowrap; }
 .d-calc-group { display: flex; flex-direction: column; gap: 4px; }
 .d-calc-group label { font-size: var(--fs-xs); color: var(--muted); white-space: nowrap; }
 .d-calc-group input { height: var(--h-sm); }
