@@ -2254,7 +2254,7 @@ function drawImg(d,setName,customerName,now,rv,logo,pImg,btn,action,origText){
     var pad=function(n){return n<10?'0'+n:n;};
     var mmm=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][ts.getMonth()];
     var stamp=pad(ts.getDate())+'-'+mmm+'-'+String(ts.getFullYear()).slice(-2)+'_'+pad(ts.getHours())+'-'+pad(ts.getMinutes());
-    var fileName=setName.replace(/\s+/g,'_')+'_'+stamp+'_estimate.png';
+    var fileName=setName.replace(/[\/\\:"*?<>|]/g,'').replace(/\s+/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,'')+'_'+stamp+'_estimate.png';
     window._lastBlob=blob; window._lastFileName=fileName;
     btn.disabled=false; btn.textContent=origText;
     saveEstimate(d,setName,rv); logToSheets(d,setName,rv);
