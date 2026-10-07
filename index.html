@@ -1620,13 +1620,13 @@ function buildDiamondRow(item,d){
   // Pcs
   var pcG=document.createElement("div"); pcG.className="d-calc-group pc";
   var pcL=document.createElement("label"); pcL.textContent="Pcs";
-  var pcI=document.createElement("input"); pcI.type="number"; pcI.min="0"; pcI.step="1"; pcI.placeholder="—"; pcI.value=d.pcs||""; pcI.style.textAlign="right";
+  var pcI=document.createElement("input"); pcI.type="number"; pcI.min="0"; pcI.step="1"; pcI.placeholder="—"; pcI.value=d.pcs||""; pcI.style.textAlign="right"; pcI.style.height="88px"; pcI.style.fontSize="15px"; pcI.style.fontWeight="500";
   pcI.oninput=function(){var it=items.find(function(x){return x.id===item.id;}); if(it){var dd=it.diamonds.find(function(x){return x.id===d.id;}); if(dd) dd.pcs=this.value;}};
   pcG.appendChild(pcL); pcG.appendChild(pcI); calcRow.appendChild(pcG);
   // Weight (plain input, no stepper)
   var wtG=document.createElement("div"); wtG.className="d-calc-group wt";
   var wtL=document.createElement("label"); wtL.textContent="Weight (ct)";
-  var wtI=document.createElement("input"); wtI.type="number"; wtI.step="0.001"; wtI.min="0"; wtI.placeholder="0.000"; wtI.value=d.wt||""; wtI.style.textAlign="right";
+  var wtI=document.createElement("input"); wtI.type="number"; wtI.step="0.001"; wtI.min="0"; wtI.placeholder="0.000"; wtI.value=d.wt||""; wtI.style.textAlign="right"; wtI.style.height="88px"; wtI.style.fontSize="15px"; wtI.style.fontWeight="500";
   wtI.oninput=function(){
     var it=items.find(function(x){return x.id===item.id;}); if(!it) return;
     var dd=it.diamonds.find(function(x){return x.id===d.id;}); if(!dd) return;
