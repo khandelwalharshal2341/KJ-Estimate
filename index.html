@@ -2961,10 +2961,7 @@ document.addEventListener("DOMContentLoaded", function() {
     var lines = keys.map(function(k) {
       return "  " + k + ": " + overrides[k] + "px; /* was " + defaults[k] + "px */";
     });
-    var text = ":root {
-" + lines.join("
-") + "
-}";
+    var text = ":root {\n" + lines.join("\n") + "\n}";
     navigator.clipboard.writeText(text).then(function() {
       var el = document.getElementById("tp-copied");
       el.style.display = "block";
