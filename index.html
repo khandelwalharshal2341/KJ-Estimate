@@ -708,35 +708,23 @@ textarea {
 }
 
 /* ══ ACTION BUTTONS ══════════════════════════════════════════════ */
-.gen-btn {
-  display: flex; align-items: center; justify-content: center; gap: var(--sp-2);
-  width: 100%; height: var(--h-lg);
+.action-row {
+  display: flex; gap: var(--sp-2); margin-bottom: var(--sp-2);
+}
+.action-row-btn {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: var(--sp-2);
+  height: var(--h-lg);
   background: var(--brand); color: #fff;
   border: none; border-radius: var(--r-card);
   font-size: var(--fs-lg); font-weight: 600; font-family: inherit;
-  cursor: pointer; margin-bottom: var(--sp-2);
+  cursor: pointer;
   box-shadow: 0 4px 16px rgba(180,7,61,.32);
   transition: background 0.15s var(--spring), transform 0.12s var(--spring), box-shadow 0.15s;
   will-change: transform;
   -webkit-tap-highlight-color: transparent;
 }
-.gen-btn:active { transform: scale(0.97); background: var(--brand-hover); box-shadow: 0 2px 8px rgba(180,7,61,.20); }
-.gen-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-.action-row {
-  display: none; gap: var(--sp-2); margin-bottom: var(--sp-2);
-}
-.action-row.visible { display: flex; }
-.action-row-btn {
-  flex: 1; display: flex; align-items: center; justify-content: center; gap: var(--sp-2);
-  height: var(--h-md);
-  background: transparent; color: var(--brand);
-  border: 1.5px solid var(--brand); border-radius: var(--r-card);
-  font-size: var(--fs-base); font-weight: 500; font-family: inherit;
-  cursor: pointer;
-  transition: background 0.14s, transform 0.12s;
-  -webkit-tap-highlight-color: transparent;
-}
-.action-row-btn:active { transform: scale(0.97); background: var(--brand-dim); }
+.action-row-btn:active { transform: scale(0.97); background: var(--brand-hover); box-shadow: 0 2px 8px rgba(180,7,61,.20); }
+.action-row-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 .sync-status {
   text-align: center; font-size: var(--fs-xs); height: 20px;
   margin-bottom: var(--sp-2);
@@ -930,11 +918,10 @@ textarea {
   </div>
   <div class="tblock" id="summary-tblock"></div>
 </div>
-<button class="gen-btn" id="gen-btn" onclick="generateShare()">&#128247;&nbsp; Generate</button>
 <div class="sync-status" id="sync-status"></div>
 <div class="action-row" id="action-row">
-  <button class="action-row-btn" id="download-btn" onclick="doActionDownload()">&#8659;&nbsp; Download</button>
-  <button class="action-row-btn" id="share-btn" onclick="doActionShare()" style="display:none">&#8679;&nbsp; Share</button>
+  <button class="action-row-btn" id="download-btn" onclick="generateShare('download')">&#8659;&nbsp; Download</button>
+  <button class="action-row-btn" id="share-btn" onclick="generateShare('share')" style="display:none">&#8679;&nbsp; Share</button>
 </div>
 <div class="recent-wrap" id="recent-wrap" style="display:none">
   <button class="recent-toggle" onclick="toggleRecent()">
@@ -1814,7 +1801,15 @@ function renderSummaryTotals(items,combinedSub,disc,afterDisc,gst,hallmark,fin){
 }
 
 // -- Image generation --
-function generateShare(){
+// Show Share button only if platform supports file sharing
+(function(){
+  var testFile; try { testFile = new File([new Blob([''])], 'test.png', {type:'image/png'}); } catch(e){}
+  var canShare = testFile && navigator.canShare && (function(){ try{ return navigator.canShare({files:[testFile]}); }catch(e){ return false; } })();
+  var sb = document.getElementById('share-btn');
+  if(sb && canShare) sb.style.display = 'flex';
+})();
+
+function generateShare(action){
   if(r24()<=0){ alert("Please enter today\'s 24kt gold rate."); return; }
   var snEl=document.getElementById("set-name");
   var nameVal=(snEl?snEl.value||"":"").trim()||(items.length===1?itemDisplayName(items[0]):"Estimate");
@@ -1822,7 +1817,9 @@ function generateShare(){
   var grossOk=items.some(function(it){return (it.gross||0)>0;});
   if(!grossOk){ if(!confirm("Gross weight is 0 for all items \u2014 continue anyway?")) return; }
   var customerName=(document.getElementById("customer-name").value||"").trim();
-  var btn=document.getElementById("gen-btn");
+  var btnId = action==='share' ? 'share-btn' : 'download-btn';
+  var btn=document.getElementById(btnId);
+  var origText = btn.textContent;
   btn.disabled=true; btn.textContent="Generating\u2026";
   var d=window._cd||{};
   var now=new Date().toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"});
@@ -1835,28 +1832,28 @@ function generateShare(){
     logo.onload=function(){
       if (estimatePhoto) {
         var pImg = new Image();
-        pImg.onload = function(){ drawImg(d,nameVal,customerName,now,rv,logo,pImg,btn); };
-        pImg.onerror = function(){ drawImg(d,nameVal,customerName,now,rv,logo,null,btn); };
+        pImg.onload = function(){ drawImg(d,nameVal,customerName,now,rv,logo,pImg,btn,action); };
+        pImg.onerror = function(){ drawImg(d,nameVal,customerName,now,rv,logo,null,btn,action); };
         pImg.src = estimatePhoto.dataUrl;
       } else {
-        drawImg(d,nameVal,customerName,now,rv,logo,null,btn);
+        drawImg(d,nameVal,customerName,now,rv,logo,null,btn,action);
       }
     };
     logo.onerror=function(){
       if (estimatePhoto) {
         var pImg = new Image();
-        pImg.onload = function(){ drawImg(d,nameVal,customerName,now,rv,null,pImg,btn); };
-        pImg.onerror = function(){ drawImg(d,nameVal,customerName,now,rv,null,null,btn); };
+        pImg.onload = function(){ drawImg(d,nameVal,customerName,now,rv,null,pImg,btn,action); };
+        pImg.onerror = function(){ drawImg(d,nameVal,customerName,now,rv,null,null,btn,action); };
         pImg.src = estimatePhoto.dataUrl;
       } else {
-        drawImg(d,nameVal,customerName,now,rv,null,null,btn);
+        drawImg(d,nameVal,customerName,now,rv,null,null,btn,action);
       }
     };
     logo.src=LOGO;
   });
 }
 
-function drawImg(d,setName,customerName,now,rv,logo,pImg,btn){
+function drawImg(d,setName,customerName,now,rv,logo,pImg,btn,action){
   // ── Canvas constants ──────────────────────────────────────────────────────
   var W=1080, P=56, C=W-P*2;
   var BRAND="#b4073d", DARK="#1a1208", CREAM="#fdfaf4", GOLD="#c8a84b";
@@ -2259,17 +2256,9 @@ function drawImg(d,setName,customerName,now,rv,logo,pImg,btn){
     var stamp=pad(ts.getDate())+'-'+mmm+'-'+String(ts.getFullYear()).slice(-2)+'_'+pad(ts.getHours())+'-'+pad(ts.getMinutes());
     var fileName=setName.replace(/\s+/g,'_')+'_'+stamp+'_estimate.png';
     window._lastBlob=blob; window._lastFileName=fileName;
-    btn.disabled=false; btn.textContent='\uD83D\uDCF7\u00A0 Generate';
+    btn.disabled=false; btn.textContent=origText;
     saveEstimate(d,setName,rv); logToSheets(d,setName,rv);
-
-    // Show action row \u2014 Download always, Share only if Web Share API supports files
-    var actionRow=document.getElementById('action-row');
-    var shareBtn=document.getElementById('share-btn');
-    var file;
-    try { file=new File([blob],fileName,{type:'image/png'}); } catch(e){ file=null; }
-    var canFileShare = file && navigator.canShare && (function(){ try{ return navigator.canShare({files:[file]}); }catch(e){ return false; } })();
-    if(shareBtn) shareBtn.style.display = canFileShare ? 'flex' : 'none';
-    if(actionRow) actionRow.classList.add('visible');
+    if(action==='share'){ doActionShare(); } else { doActionDownload(); }
   },'image/png');
 }
 
