@@ -2088,7 +2088,7 @@ function drawImg(d,setName,customerName,now,rv,logo,pImg,btn,action,origText){
   R('spacer', 48);
 
   // ── Two-pass height ───────────────────────────────────────────────────────
-  var TOP_BAR_H = 44;
+  var TOP_BAR_H = 88;
   var totalRowH = rows.reduce(function(s,r){return s+r.h;},0);
   var H = TOP_BAR_H + HERO_H + totalRowH;
 
@@ -2101,17 +2101,34 @@ function drawImg(d,setName,customerName,now,rv,logo,pImg,btn,action,origText){
   // ── TOP BAR (dark strip) ──────────────────────────────────────────────────
   cx.fillStyle = DARK; cx.fillRect(0,0,W,TOP_BAR_H);
   if (logo) {
-    var lgH=28, lgW=Math.round((logo.naturalWidth/logo.naturalHeight)*lgH);
-    cx.drawImage(logo, P, Math.round((TOP_BAR_H-lgH)/2), lgW, lgH);
+    // White version of the colour logo for the dark bar: letters solid white,
+    // gold swooshes semi-transparent white so they stay distinct from the letters.
+    var wl = document.createElement('canvas');
+    wl.width = logo.naturalWidth; wl.height = logo.naturalHeight;
+    var wlx = wl.getContext('2d');
+    wlx.drawImage(logo, 0, 0);
+    try {
+      var px = wlx.getImageData(0, 0, wl.width, wl.height), pd = px.data;
+      for (var pi = 0; pi < pd.length; pi += 4) {
+        if (!pd[pi+3]) continue;
+        var isSwoosh = pd[pi+1] >= pd[pi+2];          // gold: green ≥ blue; magenta letters: blue > green
+        pd[pi] = pd[pi+1] = pd[pi+2] = 255;
+        if (isSwoosh) pd[pi+3] = Math.round(pd[pi+3] * 0.55);
+      }
+      wlx.putImageData(px, 0, 0);
+    } catch (e) { wl = logo; }                      // fall back to the colour logo
+    var lgH=60, lgW=Math.round((logo.naturalWidth/logo.naturalHeight)*lgH);
+    cx.imageSmoothingEnabled = true; cx.imageSmoothingQuality = 'high';
+    cx.drawImage(wl, P, Math.round((TOP_BAR_H-lgH)/2), lgW, lgH);
   }
   var nowFull = now + '  ·  ' + new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
-  cx.fillStyle='#9a8a6c'; cx.font='400 12px DM Sans,sans-serif';
-  cx.textAlign='center'; cx.fillText(nowFull.toUpperCase(), W/2, TOP_BAR_H/2+5);
+  cx.fillStyle=MUTED; cx.font='400 17px DM Sans,sans-serif';
+  cx.textAlign='center'; cx.fillText(nowFull.toUpperCase(), W/2, TOP_BAR_H/2+6);
   cx.textAlign='right';
-  cx.fillStyle=MUTED; cx.font='400 11px DM Sans,sans-serif';
-  cx.fillText('24KT GOLD', W-P, TOP_BAR_H/2-2);
-  cx.fillStyle=GOLD_RICH; cx.font='600 13px DM Sans,sans-serif';
-  cx.fillText('₹'+Math.round(rv).toLocaleString('en-IN')+'/gm', W-P, TOP_BAR_H/2+11);
+  cx.fillStyle=MUTED; cx.font='500 14px DM Sans,sans-serif';
+  cx.fillText('24KT GOLD', W-P, TOP_BAR_H/2-8);
+  cx.fillStyle=GOLD_RICH; cx.font='600 24px DM Sans,sans-serif';
+  cx.fillText('₹'+Math.round(rv).toLocaleString('en-IN')+'/gm', W-P, TOP_BAR_H/2+20);
   cx.textAlign='left';
 
   // ── HERO BLOCK ────────────────────────────────────────────────────────────
