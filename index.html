@@ -1942,9 +1942,10 @@ function drawImg(d,setName,customerName,now,rv,logo,pImg,btn,action,origText){
     var dotX = x1 + lw + 10;
     var dotEnd = x2 - vw - 10;
     if (dotEnd > dotX + 12) {
-      var dotStr = '';
-      for (var dx=dotX; dx < dotEnd-8; dx+=10) dotStr += '.';
-      cx.fillStyle=BORDER; cx.font='400 12px DM Sans,sans-serif';
+      var dotFont = '400 12px DM Sans,sans-serif';
+      var dotW = mw('.', dotFont) || 3;
+      var dotStr = new Array(Math.floor((dotEnd - dotX) / dotW) + 1).join('.');
+      cx.fillStyle=BORDER; cx.font=dotFont;
       cx.textAlign='left'; cx.fillText(dotStr, dotX, baseY);
     }
     cx.textAlign='left';
@@ -1964,16 +1965,15 @@ function drawImg(d,setName,customerName,now,rv,logo,pImg,btn,action,origText){
     photoDrawW = PHOTO_W;
     photoDrawH = Math.min(Math.round(aspect * PHOTO_W), PHOTO_MAX_H);
   }
-  var HERO_INNER_H = pImg ? Math.max(photoDrawH, 200) : 200;
+  var HERO_TITLE_FONT = '700 '+F_DISP+'px EB Garamond,Georgia,serif';
+  var HERO_LINE_H = F_DISP + 10;
+  var heroTitleLines = wrap(setName, C, HERO_TITLE_FONT);
+  var heroTitleLastY = 13 + F_DISP + 10 + (heroTitleLines.length-1)*HERO_LINE_H; // baseline of last title line
+  var noPhotoInnerH = heroTitleLastY + (customerName ? 34 + 6 : 22);           // + customer line, or title descenders
+  var HERO_INNER_H = pImg ? Math.max(photoDrawH, 200) : noPhotoInnerH;
   var HERO_H = HERO_INNER_H + 80; // top+bottom padding
 
   // ── Build rows ────────────────────────────────────────────────────────────
-  R('spacer', 40);
-  var titleLines = wrap(setName, C, '700 '+F_DISP+'px EB Garamond,Georgia,serif');
-  var titleH = titleLines.length * (F_DISP + 10) + 20;
-  R('title-block', titleH, { lines: titleLines });
-  R('spacer', 12);
-  R('thin-rule', 1);
   R('spacer', 40);
 
   d.items.forEach(function(item, idx) {
@@ -2108,7 +2108,7 @@ function drawImg(d,setName,customerName,now,rv,logo,pImg,btn,action,origText){
   cx.fillStyle='#9a8a6c'; cx.font='400 12px DM Sans,sans-serif';
   cx.textAlign='center'; cx.fillText(nowFull.toUpperCase(), W/2, TOP_BAR_H/2+5);
   cx.textAlign='right';
-  cx.fillStyle='#5a4a30'; cx.font='400 11px DM Sans,sans-serif';
+  cx.fillStyle=MUTED; cx.font='400 11px DM Sans,sans-serif';
   cx.fillText('24KT GOLD', W-P, TOP_BAR_H/2-2);
   cx.fillStyle=GOLD_RICH; cx.font='600 13px DM Sans,sans-serif';
   cx.fillText('₹'+Math.round(rv).toLocaleString('en-IN')+'/gm', W-P, TOP_BAR_H/2+11);
@@ -2194,11 +2194,11 @@ function drawImg(d,setName,customerName,now,rv,logo,pImg,btn,action,origText){
     // No photo
     cx.fillStyle=BRAND; cx.font='600 11px DM Sans,sans-serif';
     cx.fillText('KHANDELWAL JEWELLERS · ESTIMATE', P, heroInnerY+13);
-    cx.fillStyle=DARK; cx.font='700 '+F_DISP+'px EB Garamond,Georgia,serif';
-    cx.fillText(setName, P, heroInnerY+13+F_DISP+10);
+    cx.fillStyle=DARK; cx.font=HERO_TITLE_FONT;
+    heroTitleLines.forEach(function(l,i){ cx.fillText(l, P, heroInnerY+13+F_DISP+10+i*HERO_LINE_H); });
     if (customerName) {
       cx.fillStyle=MUTED; cx.font='400 17px DM Sans,sans-serif';
-      cx.fillText('For: '+customerName, P, heroInnerY+13+F_DISP+44);
+      cx.fillText('For: '+customerName, P, heroInnerY+heroTitleLastY+34);
     }
   }
 
