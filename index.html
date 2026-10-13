@@ -1970,7 +1970,25 @@ function drawImg(d,setName,customerName,now,rv,logo,pImg,btn,action,origText){
   var heroTitleLines = wrap(setName, C, HERO_TITLE_FONT);
   var heroTitleLastY = 13 + F_DISP + 10 + (heroTitleLines.length-1)*HERO_LINE_H; // baseline of last title line
   var noPhotoInnerH = heroTitleLastY + (customerName ? 34 + 6 : 22);           // + customer line, or title descenders
-  var HERO_INNER_H = pImg ? Math.max(photoDrawH, 200) : noPhotoInnerH;
+  // Info column beside the photo
+  var META_X = P + PHOTO_W + 44, META_W = W - META_X - P;
+  var META_NAME_FONT = '700 52px EB Garamond,Georgia,serif', META_NAME_LH = 60;
+  var META_FLD_H = 66;                       // label + value + gap per grid row
+  var metaNameLines = wrap(setName, META_W, META_NAME_FONT);
+  var it0 = d.items[0] || {};
+  var heroFields = [
+    ['Gross weight', (it0.gross||0).toFixed(3)+' gm'],
+    ['Net gold', (it0.nw||0).toFixed(3)+' gm'],
+    ['Making', (it0.mb||0).toFixed(3)+' gm']
+  ];
+  var dTotWt = d.items.reduce(function(s,it){return s+(it.diamonds||[]).reduce(function(ss,dr){return ss+parseFloat(dr.wt||0);},0);},0);
+  var sTotWt = d.items.reduce(function(s,it){return s+(it.stones||[]).reduce(function(ss,sr){return ss+parseFloat(sr.qty||0);},0);},0);
+  if (dTotWt > 0.001) heroFields.push(['Diamond wt', dTotWt.toFixed(3)+' ct']);
+  if (sTotWt > 0.001) heroFields.push(['Stone wt', sTotWt.toFixed(3)+' ct']);
+  if (it0.sku) heroFields.push(['SKU', it0.sku]);
+  var metaHeadH = 30 + metaNameLines.length*META_NAME_LH + 14 + (customerName ? 34 : 0) + 18;
+  var metaH = metaHeadH + Math.ceil(heroFields.length/2)*META_FLD_H;
+  var HERO_INNER_H = pImg ? Math.max(photoDrawH, 200, metaH) : noPhotoInnerH;
   var HERO_H = HERO_INNER_H + 80; // top+bottom padding
 
   // ── Build rows ────────────────────────────────────────────────────────────
@@ -2007,13 +2025,14 @@ function drawImg(d,setName,customerName,now,rv,logo,pImg,btn,action,origText){
     var dRows = item.diamonds.filter(function(x){return parseFloat(x.wt)>0&&parseFloat(x.rate)>0;});
     if (dRows.length) {
       R('section-label', 38, { text: 'DIAMONDS' });
-      R('col-header-4', 30, { c1:'Description', c2:'Pcs', c3:'Weight', c4:'Amount' });
+      R('col-header-5', 30, { c1:'Description', c2:'Pcs', c3:'Weight', c4:'Rate / ct', c5:'Amount' });
       dRows.forEach(function(dr,i) {
-        R('data-row-4', 44, {
+        R('data-row-5', 44, {
           c1: (dr.desc && dr.desc.trim()) ? dr.desc.trim() : (dr.colour+' · '+dr.clarity),
           c2: dr.pcs ? String(dr.pcs) : '',
           c3: parseFloat(dr.wt||0).toFixed(3)+' ct',
-          c4: '₹'+Math.round(dr.amt||0).toLocaleString('en-IN'),
+          c4: '₹'+Math.round(parseFloat(dr.rate||0)).toLocaleString('en-IN'),
+          c5: '₹'+Math.round(dr.amt||0).toLocaleString('en-IN'),
           stripe: i%2===1
         });
       });
@@ -2158,54 +2177,32 @@ function drawImg(d,setName,customerName,now,rv,logo,pImg,btn,action,origText){
     cx.drawImage(pImg, photoX, photoY, photoDrawW, photoDrawH);
     cx.restore();
 
-    // Metadata right of photo
-    var metaX = P + photoDrawW + 44;
-    var metaMaxW = W - metaX - P;
-    var metaY = heroInnerY;
+    // Info right of photo
+    var metaX = META_X, metaY = heroInnerY;
 
-    cx.fillStyle=BRAND; cx.font='600 11px DM Sans,sans-serif';
-    cx.fillText('KHANDELWAL JEWELLERS · ESTIMATE', metaX, metaY+13);
-    metaY += 26;
+    cx.fillStyle=BRAND; cx.font='600 14px DM Sans,sans-serif';
+    cx.fillText('KHANDELWAL JEWELLERS · ESTIMATE', metaX, metaY+16);
+    metaY += 30;
 
-    var metaNameLines = wrap(setName, metaMaxW, '700 38px EB Garamond,Georgia,serif');
-    cx.fillStyle=DARK; cx.font='700 38px EB Garamond,Georgia,serif';
-    metaNameLines.forEach(function(l,i){ cx.fillText(l, metaX, metaY+38+i*46); });
-    metaY += metaNameLines.length*46 + 12;
+    cx.fillStyle=DARK; cx.font=META_NAME_FONT;
+    metaNameLines.forEach(function(l,i){ cx.fillText(l, metaX, metaY+48+i*META_NAME_LH); });
+    metaY += metaNameLines.length*META_NAME_LH + 14;
 
     if (customerName) {
-      cx.fillStyle=MUTED; cx.font='400 15px DM Sans,sans-serif';
-      cx.fillText('For: '+customerName, metaX, metaY+16); metaY+=30;
+      cx.fillStyle=MUTED; cx.font='400 20px DM Sans,sans-serif';
+      cx.fillText('For: '+customerName, metaX, metaY+20); metaY += 34;
     }
-    metaY += 12;
+    metaY += 18;
 
-    // Weight fields 2-col grid
-    var items0 = d.items[0] || {};
-    var wFields = [
-      ['Gross weight', (items0.gross||0).toFixed(3)+' gm'],
-      ['Net gold', (items0.nw||0).toFixed(3)+' gm'],
-      ['Making', (items0.mb||0).toFixed(3)+' gm']
-    ];
-    var dTotWt = d.items.reduce(function(s,it){return s+(it.diamonds||[]).reduce(function(ss,dr){return ss+parseFloat(dr.wt||0);},0);},0);
-    var sTotWt = d.items.reduce(function(s,it){return s+(it.stones||[]).reduce(function(ss,sr){return ss+parseFloat(sr.qty||0);},0);},0);
-    if (dTotWt > 0.001) wFields.push(['Diamond wt', dTotWt.toFixed(3)+' ct']);
-    if (sTotWt > 0.001) wFields.push(['Stone wt', sTotWt.toFixed(3)+' ct']);
-
-    var colW2 = metaMaxW / 2, fldH = 36;
-    wFields.forEach(function(f,i){
-      var col=i%2, row2=Math.floor(i/2);
-      var fx=metaX+col*colW2, fy=metaY+row2*fldH;
-      cx.fillStyle=MUTED; cx.font='400 12px DM Sans,sans-serif';
-      cx.fillText(f[0].toUpperCase(), fx, fy+12);
-      cx.fillStyle=DARK; cx.font='500 16px DM Sans,sans-serif';
-      cx.fillText(f[1], fx, fy+30);
+    // Fields, 2-column grid
+    var colW2 = META_W / 2;
+    heroFields.forEach(function(f,i){
+      var fx = metaX + (i%2)*colW2, fy = metaY + Math.floor(i/2)*META_FLD_H;
+      cx.fillStyle=MUTED; cx.font='500 14px DM Sans,sans-serif';
+      cx.fillText(f[0].toUpperCase(), fx, fy+15);
+      cx.fillStyle=DARK; cx.font='500 24px DM Sans,sans-serif';
+      cx.fillText(f[1], fx, fy+45);
     });
-    if (d.items[0] && d.items[0].sku) {
-      var lastRow2 = Math.ceil(wFields.length/2);
-      cx.fillStyle=MUTED; cx.font='400 12px DM Sans,sans-serif';
-      cx.fillText('SKU', metaX, metaY+lastRow2*fldH+12);
-      cx.fillStyle=DARK; cx.font='500 16px DM Sans,sans-serif';
-      cx.fillText(d.items[0].sku, metaX, metaY+lastRow2*fldH+30);
-    }
 
   } else {
     // No photo
@@ -2225,6 +2222,7 @@ function drawImg(d,setName,customerName,now,rv,logo,pImg,btn,action,origText){
   // ── ROWS ──────────────────────────────────────────────────────────────────
   var y = TOP_BAR_H + HERO_H;
   var X1=P, X2=P+Math.round(C*0.48), X3=P+Math.round(C*0.67), X4=W-P;
+  var Y2=P+Math.round(C*0.40), Y3=P+Math.round(C*0.58), Y4=P+Math.round(C*0.79);   // 5-column diamond table
 
   rows.forEach(function(row) {
     switch(row.type) {
@@ -2274,6 +2272,27 @@ function drawImg(d,setName,customerName,now,rv,logo,pImg,btn,action,origText){
         if(row.c4) cx.fillText(row.c4,X4,y+row.h-4);
         cx.textAlign='left';
         cx.fillStyle=BORDER; cx.fillRect(P,y+row.h,C,1); break;
+
+      case 'col-header-5':
+        cx.fillStyle=MUTED; cx.font='500 13px DM Sans,sans-serif';
+        cx.textAlign='left';  cx.fillText(row.c1||'',X1,y+row.h-4);
+        cx.textAlign='right';
+        cx.fillText(row.c2,Y2,y+row.h-4); cx.fillText(row.c3,Y3,y+row.h-4);
+        cx.fillText(row.c4,Y4,y+row.h-4); cx.fillText(row.c5,X4,y+row.h-4);
+        cx.textAlign='left';
+        cx.fillStyle=BORDER; cx.fillRect(P,y+row.h,C,1); break;
+
+      case 'data-row-5':
+        if(row.stripe){ cx.fillStyle=STRIPE; cx.fillRect(0,y,W,row.h); }
+        cx.fillStyle=DARK; cx.font='400 '+F_MD+'px DM Sans,sans-serif';
+        cx.textAlign='left'; cx.fillText(row.c1||'',X1,y+row.h-10);
+        cx.textAlign='right';
+        cx.fillStyle=MUTED; if(row.c2) cx.fillText(row.c2,Y2,y+row.h-10);
+        cx.fillStyle=DARK;  cx.fillText(row.c3,Y3,y+row.h-10);
+        cx.fillText(row.c4,Y4,y+row.h-10);
+        cx.font='500 '+F_MD+'px DM Sans,sans-serif';
+        cx.fillText(row.c5,X4,y+row.h-10);
+        cx.textAlign='left'; break;
 
       case 'data-row-4':
         if(row.stripe){ cx.fillStyle=STRIPE; cx.fillRect(0,y,W,row.h); }
