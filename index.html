@@ -1976,15 +1976,13 @@ function drawImg(d,setName,customerName,now,rv,logo,pImg,btn,action,origText){
   var META_FLD_H = 66;                       // label + value + gap per grid row
   var metaNameLines = wrap(setName, META_W, META_NAME_FONT);
   var it0 = d.items[0] || {};
+  // Beside the photo: Gross, Net + purity, Diamond wt, SKU — nothing else.
   var heroFields = [
     ['Gross weight', (it0.gross||0).toFixed(3)+' gm'],
-    ['Net gold', (it0.nw||0).toFixed(3)+' gm'],
-    ['Making', (it0.mb||0).toFixed(3)+' gm']
+    ['Net gold · '+(it0.purity||'')+'kt', (it0.nw||0).toFixed(3)+' gm']
   ];
   var dTotWt = d.items.reduce(function(s,it){return s+(it.diamonds||[]).reduce(function(ss,dr){return ss+parseFloat(dr.wt||0);},0);},0);
-  var sTotWt = d.items.reduce(function(s,it){return s+(it.stones||[]).reduce(function(ss,sr){return ss+parseFloat(sr.qty||0);},0);},0);
   if (dTotWt > 0.001) heroFields.push(['Diamond wt', dTotWt.toFixed(3)+' ct']);
-  if (sTotWt > 0.001) heroFields.push(['Stone wt', sTotWt.toFixed(3)+' ct']);
   if (it0.sku) heroFields.push(['SKU', it0.sku]);
   var metaHeadH = 30 + metaNameLines.length*META_NAME_LH + 14 + (customerName ? 34 : 0) + 18;
   var metaH = metaHeadH + Math.ceil(heroFields.length/2)*META_FLD_H;
